@@ -1,0 +1,21 @@
+{
+   "name": "create-nestjs-auth",
+   "version": "1.0.0",
+   "bin": "./index.js",
+   "scripts": {
+      "test": "node index.js test-output"
+   },
+   "keywords": [],
+   "author": "",
+   "license": "ISC",
+   "type": "commonjs",
+   "dependencies": {
+      "chalk": "^4.1.2",
+      "commander": "^14.0.2",
+      "fs-extra": "^11.3.2"
+   },
+   "devDependencies": {
+      "@types/node": "^24.10.1",
+      "typescript": "^5.9.3"
+   }
+}
