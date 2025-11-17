@@ -1,6 +1,6 @@
-<div align="center">
+﻿<div align="center">
 
-# 🚀 create-nestjs-auth
+# create-nestjs-auth
 
 ### The Zero-Config Way to Build Secure Authentication
 
@@ -19,32 +19,32 @@ Get a battle-tested, production-ready NestJS auth system in **under 3 minutes**.
 npx create-nestjs-auth@latest
 ```
 
-[Quick Start](#-quick-start) • [Features](#-what-you-get) • [Demo](#-see-it-in-action) • [Docs](#-links--resources)
+[Quick Start](#-quick-start)  [Features](#-what-you-get)  [Demo](#-see-it-in-action)  [Docs](#-links--resources)
 
 ---
 
-**⏱️ Save 40 hours** • **🔒 Production-ready security** • **🎯 Zero configuration** • **🚀 Battle-tested**
+**️ Save 40 hours**  ** Production-ready security**  ** Zero configuration**  ** Battle-tested**
 
 </div>
 
 ---
 
-## 🎯 Why This Exists
+## Why This Exists
 
 Building secure JWT authentication isn't trivial. You need:
-- ✅ Access tokens + refresh token rotation
-- ✅ HttpOnly cookies (not localStorage)
-- ✅ Multi-device session management
-- ✅ Role-based access control (RBAC)
-- ✅ Rate limiting & brute-force protection
-- ✅ PII-safe logging
-- ✅ Proper password hashing (bcrypt 12 rounds)
+-  Access tokens + refresh token rotation
+-  HttpOnly cookies (not localStorage)
+-  Multi-device session management
+-  Role-based access control (RBAC)
+-  Rate limiting & brute-force protection
+-  PII-safe logging
+-  Proper password hashing (bcrypt 12 rounds)
 
-**This CLI gives you all of that.** Production-ready, security-hardened, tested patterns—instantly.
+**This CLI gives you all of that.** Production-ready, security-hardened, tested patternsinstantly.
 
 <div align="center">
 
-### 📈 The Problem with Building Auth From Scratch
+### The Problem with Building Auth From Scratch
 
 | Task | Time Required | Complexity |
 |------|---------------|------------|
@@ -54,20 +54,20 @@ Building secure JWT authentication isn't trivial. You need:
 | Rate limiting | 2-3 hours | Medium |
 | Security hardening | 8-10 hours | Very High |
 | Testing & debugging | 6-8 hours | High |
-| **Total** | **29-39 hours** | **😰** |
+| **Total** | **29-39 hours** | **** |
 
-### ⚡ With create-nestjs-auth
+### With create-nestjs-auth
 
 | Task | Time Required | Complexity |
 |------|---------------|------------|
 | Run one command | 3 minutes | **Zero** |
-| **Total** | **3 minutes** | **😎** |
+| **Total** | **3 minutes** | **** |
 
 *Save 30-40 hours and get battle-tested code that just works.*
 
 </div>
 
-## ⚡ Quick Start
+## Quick Start
 
 **30 seconds to a running auth API:**
 
@@ -76,12 +76,12 @@ Building secure JWT authentication isn't trivial. You need:
 npx create-nestjs-auth@latest
 
 # Answer 7 quick questions
-# ✅ Project name
-# ✅ Package manager
-# ✅ Database URL
-# ✅ Install dependencies
-# ✅ Setup database
-# ✅ Initialize git
+#  Project name
+#  Package manager
+#  Database URL
+#  Install dependencies
+#  Setup database
+#  Initialize git
 
 # Done! Your API is running at http://localhost:8080/api/v1
 ```
@@ -89,42 +89,42 @@ npx create-nestjs-auth@latest
 **That's it.** No configuration files. No secret management headaches. No database setup confusion.
 
 <details>
-<summary><b>🎬 See it in action (GIF/Video coming soon)</b></summary>
+<summary><b> See it in action (GIF/Video coming soon)</b></summary>
 
 ```
-⚡️ create-nestjs-auth
+️ create-nestjs-auth
 
 ? What is your project name? my-awesome-api
 ? Which package manager? pnpm (detected)
 ? Install dependencies? Yes
 ? Initialize git repository? Yes
 
-🚀 Creating my-awesome-api...
-📦 Installing dependencies...
-✅ Success! Created my-awesome-api
+ Creating my-awesome-api...
+ Installing dependencies...
+ Success! Created my-awesome-api
 
 ? Complete setup now? Yes
-🔑 Generating JWT secrets...
+ Generating JWT secrets...
 ? Enter PostgreSQL URL: postgresql://localhost:5432/mydb
 ? Set up database now? Yes
-📦 Running migrations & seed...
-✅ Default admin: admin@example.com / Admin@123
+ Running migrations & seed...
+ Default admin: admin@example.com / Admin@123
 
 ? Start dev server? Yes
-🚀 Server running at http://localhost:8080/api/v1
+ Server running at http://localhost:8080/api/v1
 ```
 
 </details>
 
 ---
 
-## 🎁 What You Get
+## What You Get
 
 <table>
 <tr>
 <td width="50%">
 
-### 🔐 Enterprise-Grade Security
+### Enterprise-Grade Security
 
 - **Token Rotation** - Refresh tokens auto-rotate on use
 - **Zero XSS Risk** - HttpOnly cookies only
@@ -135,7 +135,7 @@ npx create-nestjs-auth@latest
 </td>
 <td width="50%">
 
-### 🎯 Developer Experience
+### Developer Experience
 
 - **TypeScript** - Full type safety
 - **Hot Reload** - Instant feedback
@@ -148,7 +148,7 @@ npx create-nestjs-auth@latest
 <tr>
 <td width="50%">
 
-### 🚀 Production-Ready
+### Production-Ready
 
 - **RBAC in 2 Lines** - `@Roles(UserRole.ADMIN)`
 - **Multi-Device Sessions** - Track 5 devices/user
@@ -159,7 +159,7 @@ npx create-nestjs-auth@latest
 </td>
 <td width="50%">
 
-### 📦 Batteries Included
+### Batteries Included
 
 - **PostgreSQL + Prisma** - Modern ORM
 - **Database Migrations** - Version control for DB
@@ -173,7 +173,7 @@ npx create-nestjs-auth@latest
 
 ---
 
-## 🎬 See It in Action
+## See It in Action
 
 ### Video Demo (Coming Soon)
 > We're creating a video walkthrough. Subscribe to [discussions](https://github.com/masabinhok/create-nestjs-auth/discussions) to get notified!
@@ -185,15 +185,15 @@ npx create-nestjs-auth@latest
 npx create-nestjs-auth@latest my-api
 
 # 2. Answer prompts (20 seconds)
-# ✓ Project name: my-api
-# ✓ Package manager: pnpm
-# ✓ Install dependencies: Yes
-# ✓ Database URL: postgresql://localhost:5432/mydb
-# ✓ Setup database: Yes
-# ✓ Start server: Yes
+#  Project name: my-api
+#  Package manager: pnpm
+#  Install dependencies: Yes
+#  Database URL: postgresql://localhost:5432/mydb
+#  Setup database: Yes
+#  Start server: Yes
 
 # 3. Your API is live! (30 seconds)
-# 🚀 http://localhost:8080/api/v1
+#  http://localhost:8080/api/v1
 ```
 
 ### Live Example
@@ -232,7 +232,7 @@ curl http://localhost:8080/api/v1/auth/me -b cookies.txt
 **Adding a protected admin endpoint** (2 lines):
 
 ```typescript
-@Roles(UserRole.ADMIN)  // ← Just add this decorator
+@Roles(UserRole.ADMIN)  //  Just add this decorator
 @Delete('posts/:id')
 deletePost() {
   return { message: 'Deleted' };
@@ -243,7 +243,7 @@ deletePost() {
 
 ```typescript
 @Get('my-profile')
-getProfile(@GetUser() user) {  // ← User automatically injected
+getProfile(@GetUser() user) {  //  User automatically injected
   return { profile: user };
 }
 ```
@@ -251,7 +251,7 @@ getProfile(@GetUser() user) {  // ← User automatically injected
 **Making an endpoint public** (1 line):
 
 ```typescript
-@Public()  // ← Skip authentication
+@Public()  //  Skip authentication
 @Get('posts')
 findAll() {
   return { posts: [] };
@@ -262,7 +262,7 @@ That's it. No boilerplate. No configuration. Just decorators.
 
 ---
 
-## 🎨 How It Works
+## How It Works
 
 ### The Magic Behind the CLI
 
@@ -285,22 +285,22 @@ graph LR
 
 ```
 my-app/
-├── 🔐 src/modules/auth/      # JWT + Refresh token logic
-├── 👥 src/modules/users/     # User CRUD + profile
-├── 🏥 src/modules/health/    # Health check endpoints
-├── 🛡️  src/common/guards/     # JWT & RBAC guards
-├── 🎨 src/common/decorators/ # @Roles(), @Public(), @GetUser()
-├── 🗄️  prisma/               # Schema + migrations + seed
-├── 🧪 test/                  # E2E test suite
-├── 📝 .env                   # Auto-configured
-└── 📦 package.json           # All dependencies ready
+  src/modules/auth/      # JWT + Refresh token logic
+  src/modules/users/     # User CRUD + profile
+  src/modules/health/    # Health check endpoints
+ ️  src/common/guards/     # JWT & RBAC guards
+  src/common/decorators/ # @Roles(), @Public(), @GetUser()
+ ️  prisma/               # Schema + migrations + seed
+  test/                  # E2E test suite
+  .env                   # Auto-configured
+  package.json           # All dependencies ready
 ```
 
 ---
 
-## 🚀 Usage Examples
+## Usage Examples
 
-### 1️⃣ Interactive Mode (Recommended)
+### 1️ Interactive Mode (Recommended)
 
 **Zero configuration. Just answer questions:**
 
@@ -320,7 +320,7 @@ The CLI guides you through:
 
 **Perfect for:** First-time users, learning, rapid prototyping
 
-### 2️⃣ Quick Mode
+### 2️ Quick Mode
 
 **Fastest way to get started:**
 
@@ -333,7 +333,7 @@ npm run prisma:generate && npm run prisma:migrate && npm start:dev
 
 **Perfect for:** Experienced users who know the drill
 
-### 3️⃣ Automation Mode
+### 3️ Automation Mode
 
 **For CI/CD and scripts:**
 
@@ -358,46 +358,46 @@ npx create-nestjs-auth@latest my-app --yes --skip-git --package-manager bun
 
 ---
 
-## 📚 Complete API Reference
+## Complete API Reference
 
 Your generated API includes these endpoints out of the box:
 
-### 🔐 Authentication
+### Authentication
 
 | Endpoint | Method | Description | Auth |
 |----------|--------|-------------|------|
-| `/auth/signup` | POST | Register new user | ❌ |
-| `/auth/login` | POST | Login with credentials | ❌ |
-| `/auth/refresh` | POST | Refresh access token | ✅ Refresh token |
-| `/auth/logout` | POST | Logout & invalidate tokens | ✅ |
-| `/auth/me` | GET | Get current user | ✅ |
+| `/auth/signup` | POST | Register new user |  |
+| `/auth/login` | POST | Login with credentials |  |
+| `/auth/refresh` | POST | Refresh access token |  Refresh token |
+| `/auth/logout` | POST | Logout & invalidate tokens |  |
+| `/auth/me` | GET | Get current user |  |
 
-### 👥 Users (Admin Only)
-
-| Endpoint | Method | Description | Auth |
-|----------|--------|-------------|------|
-| `/users` | GET | List all users (paginated) | 🔑 ADMIN |
-| `/users/:id` | GET | Get user by ID | 🔑 ADMIN |
-| `/users/:id` | PATCH | Update user | 🔑 ADMIN |
-| `/users/:id` | DELETE | Soft delete user | 🔑 ADMIN |
-
-### 👤 Profile
+### Users (Admin Only)
 
 | Endpoint | Method | Description | Auth |
 |----------|--------|-------------|------|
-| `/users/profile` | GET | Get own profile | ✅ |
-| `/users/profile` | PATCH | Update own profile | ✅ |
+| `/users` | GET | List all users (paginated) |  ADMIN |
+| `/users/:id` | GET | Get user by ID |  ADMIN |
+| `/users/:id` | PATCH | Update user |  ADMIN |
+| `/users/:id` | DELETE | Soft delete user |  ADMIN |
 
-### 🏥 Health Checks
+### Profile
 
 | Endpoint | Method | Description | Auth |
 |----------|--------|-------------|------|
-| `/health` | GET | Full health check | ❌ |
-| `/health/ready` | GET | Readiness probe (K8s) | ❌ |
-| `/health/live` | GET | Liveness probe (K8s) | ❌ |
+| `/users/profile` | GET | Get own profile |  |
+| `/users/profile` | PATCH | Update own profile |  |
+
+### Health Checks
+
+| Endpoint | Method | Description | Auth |
+|----------|--------|-------------|------|
+| `/health` | GET | Full health check |  |
+| `/health/ready` | GET | Readiness probe (K8s) |  |
+| `/health/live` | GET | Liveness probe (K8s) |  |
 
 <details>
-<summary><b>📝 Example: Login & Access Protected Route</b></summary>
+<summary><b> Example: Login & Access Protected Route</b></summary>
 
 ```bash
 # 1. Login and save cookies
@@ -433,7 +433,7 @@ curl -X POST http://localhost:8080/api/v1/auth/logout -b cookies.txt
 </details>
 
 <details>
-<summary><b>🔧 Example: Add RBAC to Your Endpoint</b></summary>
+<summary><b> Example: Add RBAC to Your Endpoint</b></summary>
 
 ```typescript
 import { Controller, Get } from '@nestjs/common';
@@ -470,7 +470,7 @@ export class PostsController {
 
 ---
 
-## ⚙️ CLI Options Reference
+## ️ CLI Options Reference
 
 | Option | Description | Example |
 |--------|-------------|---------|
@@ -483,7 +483,7 @@ export class PostsController {
 
 ---
 
-## 📋 System Requirements
+## System Requirements
 
 | Requirement | Version | Why? |
 |------------|---------|------|
@@ -508,7 +508,7 @@ docker run --name postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgre
 
 ---
 
-## 🏗️ Architecture Overview
+## ️ Architecture Overview
 
 ### What's Inside
 
@@ -516,47 +516,47 @@ The generated project follows NestJS best practices:
 
 ```
 my-app/
-├── 📂 src/
-│   ├── 🔐 modules/auth/
-│   │   ├── auth.controller.ts      # Login, signup, refresh, logout
-│   │   ├── auth.service.ts         # JWT logic, token rotation
-│   │   └── strategies/             # JWT strategies
-│   │
-│   ├── 👥 modules/users/
-│   │   ├── users.controller.ts     # CRUD endpoints
-│   │   ├── users.service.ts        # User business logic
-│   │   └── dto/                    # Data transfer objects
-│   │
-│   ├── 🏥 modules/health/
-│   │   └── health.controller.ts    # K8s-ready health checks
-│   │
-│   ├── 🛡️ common/
-│   │   ├── decorators/             # @Roles(), @Public(), @GetUser()
-│   │   ├── guards/                 # JWT + RBAC guards
-│   │   ├── interceptors/           # Response formatting
-│   │   ├── filters/                # Exception handling
-│   │   └── validators/             # Custom validation rules
-│   │
-│   └── ⚙️ config/
-│       ├── config.module.ts        # Environment config
-│       ├── env.validation.ts       # Zod validation
-│       └── logger.config.ts        # Pino logger setup
-│
-├── 🗄️ prisma/
-│   ├── schema.prisma               # Database models
-│   ├── seed.ts                     # Default admin user
-│   └── migrations/                 # Version-controlled DB changes
-│
-├── 🧪 test/
-│   ├── app.e2e-spec.ts            # End-to-end tests
-│   └── jest-e2e.json              # Test configuration
-│
-└── 📝 Config Files
-    ├── .env                        # Your secrets (auto-generated)
-    ├── .env.example                # Template for team
-    ├── nest-cli.json               # NestJS config
-    ├── tsconfig.json               # TypeScript config
-    └── eslint.config.mjs           # Linting rules
+  src/
+     modules/auth/
+       auth.controller.ts      # Login, signup, refresh, logout
+       auth.service.ts         # JWT logic, token rotation
+       strategies/             # JWT strategies
+   
+     modules/users/
+       users.controller.ts     # CRUD endpoints
+       users.service.ts        # User business logic
+       dto/                    # Data transfer objects
+   
+     modules/health/
+       health.controller.ts    # K8s-ready health checks
+   
+    ️ common/
+       decorators/             # @Roles(), @Public(), @GetUser()
+       guards/                 # JWT + RBAC guards
+       interceptors/           # Response formatting
+       filters/                # Exception handling
+       validators/             # Custom validation rules
+   
+    ️ config/
+        config.module.ts        # Environment config
+        env.validation.ts       # Zod validation
+        logger.config.ts        # Pino logger setup
+
+ ️ prisma/
+    schema.prisma               # Database models
+    seed.ts                     # Default admin user
+    migrations/                 # Version-controlled DB changes
+
+  test/
+    app.e2e-spec.ts            # End-to-end tests
+    jest-e2e.json              # Test configuration
+
+  Config Files
+     .env                        # Your secrets (auto-generated)
+     .env.example                # Template for team
+     nest-cli.json               # NestJS config
+     tsconfig.json               # TypeScript config
+     eslint.config.mjs           # Linting rules
 ```
 
 ### Key Design Patterns
@@ -569,7 +569,7 @@ my-app/
 
 ---
 
-## 🎯 Common Use Cases
+## Common Use Cases
 
 ### 1. Add a New Protected Endpoint
 
@@ -611,7 +611,7 @@ export class PostsController {
 enum UserRole {
   USER
   ADMIN
-  MODERATOR  // ← Add new role
+  MODERATOR  //  Add new role
 }
 
 // 2. Run migration
@@ -663,7 +663,7 @@ docker run -p 8080:8080 my-app
 
 ---
 
-## 🔒 Security Features Explained
+## Security Features Explained
 
 ### 1. Token Rotation
 Every time you refresh your access token, the old refresh token is **invalidated**. If someone steals your refresh token, they can only use it once.
@@ -716,7 +716,7 @@ Passwords and tokens are automatically **redacted** from logs:
 
 ---
 
-## 🆚 Comparison with Alternatives
+## Comparison with Alternatives
 
 ### vs. Building from Scratch
 
@@ -724,22 +724,22 @@ Passwords and tokens are automatically **redacted** from logs:
 |---------|-------------|-------------------|
 | **Time to setup** | 30-40 hours | 3 minutes |
 | **Security audit** | You do it (risky) | Battle-tested |
-| **Token rotation** | Implement yourself | ✅ Included |
-| **RBAC** | Build guards | ✅ Decorator-based |
-| **Rate limiting** | Manual setup | ✅ Pre-configured |
-| **Testing** | Write tests | ✅ E2E tests included |
+| **Token rotation** | Implement yourself |  Included |
+| **RBAC** | Build guards |  Decorator-based |
+| **Rate limiting** | Manual setup |  Pre-configured |
+| **Testing** | Write tests |  E2E tests included |
 | **Maintenance** | Your responsibility | Updates via CLI |
 
 ### vs. NestJS Official Auth Template
 
 | Feature | Official Template | create-nestjs-auth |
 |---------|------------------|-------------------|
-| **Refresh tokens** | ❌ Basic example | ✅ Full rotation |
-| **Multi-device** | ❌ Not included | ✅ 5 devices/user |
-| **Database** | ❌ DIY | ✅ Prisma + migrations |
-| **RBAC** | ❌ Manual | ✅ Decorator-based |
-| **Production-ready** | ❌ Example code | ✅ Battle-tested |
-| **Interactive setup** | ❌ No | ✅ Guided wizard |
+| **Refresh tokens** |  Basic example |  Full rotation |
+| **Multi-device** |  Not included |  5 devices/user |
+| **Database** |  DIY |  Prisma + migrations |
+| **RBAC** |  Manual |  Decorator-based |
+| **Production-ready** |  Example code |  Battle-tested |
+| **Interactive setup** |  No |  Guided wizard |
 
 ### vs. Third-Party Auth (Auth0, Firebase)
 
@@ -767,10 +767,10 @@ Passport is great, but it's just **one piece** of the puzzle. You still need:
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 <details>
-<summary><b>❌ "Command not found: create-nestjs-auth"</b></summary>
+<summary><b> "Command not found: create-nestjs-auth"</b></summary>
 
 Use `npx` with `@latest` tag:
 ```bash
@@ -786,7 +786,7 @@ create-nestjs-auth my-app
 </details>
 
 <details>
-<summary><b>❌ "Template directory not found"</b></summary>
+<summary><b> "Template directory not found"</b></summary>
 
 Reinstall the CLI:
 ```bash
@@ -798,7 +798,7 @@ npm install -g create-nestjs-auth
 </details>
 
 <details>
-<summary><b>❌ Node.js version error</b></summary>
+<summary><b> Node.js version error</b></summary>
 
 Upgrade to Node.js 20+:
 ```bash
@@ -812,7 +812,7 @@ nvm use 20
 </details>
 
 <details>
-<summary><b>❌ Database connection fails</b></summary>
+<summary><b> Database connection fails</b></summary>
 
 Check your PostgreSQL is running:
 ```bash
@@ -832,7 +832,7 @@ Common fixes:
 </details>
 
 <details>
-<summary><b>❌ "JWT verification failed"</b></summary>
+<summary><b> "JWT verification failed"</b></summary>
 
 Regenerate your JWT secrets:
 ```bash
@@ -851,7 +851,7 @@ npm run start:dev
 </details>
 
 <details>
-<summary><b>❌ Port 8080 already in use</b></summary>
+<summary><b> Port 8080 already in use</b></summary>
 
 Option 1: Change port in `.env`:
 ```env
@@ -870,7 +870,7 @@ Get-Process -Id (Get-NetTCPConnection -LocalPort 8080).OwningProcess | Stop-Proc
 </details>
 
 <details>
-<summary><b>❌ CORS errors in browser</b></summary>
+<summary><b> CORS errors in browser</b></summary>
 
 Update `CORS_ORIGIN` in `.env`:
 ```env
@@ -886,7 +886,7 @@ Restart server after changes.
 </details>
 
 <details>
-<summary><b>❌ Prisma Client errors</b></summary>
+<summary><b> Prisma Client errors</b></summary>
 
 Regenerate Prisma Client:
 ```bash
@@ -903,7 +903,7 @@ npm run prisma:generate
 </details>
 
 <details>
-<summary><b>❓ Still stuck?</b></summary>
+<summary><b> Still stuck?</b></summary>
 
 Open an issue with:
 - Node.js version (`node --version`)
@@ -912,17 +912,17 @@ Open an issue with:
 - Full error message
 - Steps to reproduce
 
-[Report Issue →](https://github.com/masabinhok/create-nestjs-auth/issues)
+[Report Issue ](https://github.com/masabinhok/create-nestjs-auth/issues)
 
 </details>
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We love contributions! Here's how you can help:
 
-### 🐛 Found a Bug?
+### Found a Bug?
 1. Check if it's already reported in [Issues](https://github.com/masabinhok/create-nestjs-auth/issues)
 2. If not, open a new issue with:
    - Clear title
@@ -930,12 +930,12 @@ We love contributions! Here's how you can help:
    - Expected vs actual behavior
    - Your environment (Node version, OS, etc.)
 
-### ✨ Have an Idea?
+### Have an Idea?
 1. Open a [Discussion](https://github.com/masabinhok/create-nestjs-auth/discussions)
 2. Describe your idea and use case
 3. Get feedback from the community
 
-### 🔧 Want to Contribute Code?
+### Want to Contribute Code?
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes
@@ -948,7 +948,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-## 🌟 Showcase
+## Showcase
 
 **Built something amazing with this CLI?** We'd love to feature your project!
 
@@ -962,7 +962,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 </td>
 <td align="center" width="33%">
 <b>Submit Your Project</b><br>
-<sub><a href="https://github.com/masabinhok/create-nestjs-auth/discussions/new?category=show-and-tell">Share it here →</a></sub>
+<sub><a href="https://github.com/masabinhok/create-nestjs-auth/discussions/new?category=show-and-tell">Share it here </a></sub>
 </td>
 <td align="center" width="33%">
 <b>Get Featured</b><br>
@@ -974,19 +974,19 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 ### Success Stories
 
 > *"Saved me 2 weeks of setup time. The security patterns alone are worth it."*  
-> — **Developer** building a SaaS platform
+>  **Developer** building a SaaS platform
 
 > *"Perfect starter for our microservices. Clean code, great documentation."*  
-> — **CTO** at a tech startup
+>  **CTO** at a tech startup
 
 > *"Used it for my university project. Got an A+ and learned best practices."*  
-> — **Student** learning backend development
+>  **Student** learning backend development
 
 **Share your story:** Open a [discussion](https://github.com/masabinhok/create-nestjs-auth/discussions)
 
 ---
 
-## 📊 Tech Stack
+## Tech Stack
 
 <div align="center">
 
@@ -1006,33 +1006,33 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-## 🔗 Links & Resources
+## Links & Resources
 
-### 📖 Documentation
+### Documentation
 - [Full Template Documentation](https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate)
 - [Interactive Setup Guide](INTERACTIVE_SETUP.md)
 - [Quick Reference](QUICK_REFERENCE.md)
 - [Changelog](CHANGELOG.md)
 
-### 💬 Community
+### Community
 - [GitHub Discussions](https://github.com/masabinhok/create-nestjs-auth/discussions) - Ask questions, share ideas
 - [Report Issues](https://github.com/masabinhok/create-nestjs-auth/issues) - Found a bug? Let us know
 - [View Changelog](CHANGELOG.md) - See what's new
 
-### 🎓 Learning Resources
+### Learning Resources
 - [NestJS Documentation](https://docs.nestjs.com)
 - [Prisma Documentation](https://www.prisma.io/docs)
 - [JWT.io](https://jwt.io) - Learn about JWT tokens
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/) - Web security basics
 
-### 🛠️ Related Projects
+### ️ Related Projects
 - [create-next-app](https://nextjs.org/docs/api-reference/create-next-app) - Create Next.js apps
 - [create-t3-app](https://create.t3.gg) - Full-stack TypeScript
 - [nest-cli](https://docs.nestjs.com/cli/overview) - Official NestJS CLI
 
 ---
 
-## ❓ FAQ
+## FAQ
 
 <details>
 <summary><b>Can I use this with MySQL/MongoDB?</b></summary>
@@ -1094,7 +1094,7 @@ npx create-nestjs-auth@latest api
 3. Send email with token (use Nodemailer, SendGrid, etc.)
 4. Verify token on confirmation
 
-Check out the template code—the patterns are already there!
+Check out the template codethe patterns are already there!
 
 </details>
 
@@ -1114,7 +1114,7 @@ We actively maintain this project and update dependencies regularly. Check the [
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 This project wouldn't exist without these amazing technologies:
 
@@ -1126,7 +1126,7 @@ Special thanks to the open-source community for feedback and contributions!
 
 ---
 
-## 📜 License
+## License
 
 **MIT License** - do whatever you want with it!
 
@@ -1142,11 +1142,11 @@ Copyright (c) 2025 Sabin Shrestha
 
 ---
 
-## 💫 Before You Go...
+## Before You Go...
 
 ### Did this save you time?
 
-⭐ **Star this repository** to help others discover it!
+ **Star this repository** to help others discover it!
 
 <a href="https://github.com/masabinhok/create-nestjs-auth/stargazers">
   <img src="https://img.shields.io/github/stars/masabinhok/create-nestjs-auth?style=social" alt="GitHub stars">
@@ -1156,7 +1156,7 @@ Copyright (c) 2025 Sabin Shrestha
 
 Help other developers save 40 hours of work:
 
-[![Twitter](https://img.shields.io/badge/Share%20on-Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/intent/tweet?text=Just%20saved%2040%20hours%20with%20create-nestjs-auth%20🚀%20Production-ready%20NestJS%20authentication%20in%203%20minutes!&url=https://github.com/masabinhok/create-nestjs-auth&hashtags=NestJS,TypeScript,JWT,WebDev)
+[![Twitter](https://img.shields.io/badge/Share%20on-Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/intent/tweet?text=Just%20saved%2040%20hours%20with%20create-nestjs-auth%20%20Production-ready%20NestJS%20authentication%20in%203%20minutes!&url=https://github.com/masabinhok/create-nestjs-auth&hashtags=NestJS,TypeScript,JWT,WebDev)
 [![LinkedIn](https://img.shields.io/badge/Share%20on-LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/masabinhok/create-nestjs-auth)
 [![Reddit](https://img.shields.io/badge/Share%20on-Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https://github.com/masabinhok/create-nestjs-auth&title=create-nestjs-auth%20-%20Production-ready%20NestJS%20auth%20in%203%20minutes)
 [![Dev.to](https://img.shields.io/badge/Share%20on-Dev.to-0A0A0A?style=for-the-badge&logo=dev.to&logoColor=white)](https://dev.to/new?prefill=---%0Atitle:%20Production-ready%20NestJS%20Authentication%20in%203%20Minutes%0Apublished:%20true%0Atags:%20nestjs,typescript,authentication,webdev%0A---%0A%0ACheck%20out%20create-nestjs-auth:%20https://github.com/masabinhok/create-nestjs-auth)
@@ -1170,7 +1170,7 @@ Found a bug? Have a feature idea? [Open an issue](https://github.com/masabinhok/
 
 ---
 
-<h3>Built with ❤️ by <a href="https://sabinshrestha69.com.np">Sabin Shrestha</a></h3>
+<h3>Built with ️ by <a href="https://sabinshrestha69.com.np">Sabin Shrestha</a></h3>
 
 <p>
   <a href="https://github.com/masabinhok">
@@ -1186,7 +1186,7 @@ Found a bug? Have a feature idea? [Open an issue](https://github.com/masabinhok/
 
 <br>
 
-### 🌟 Sponsors & Supporters
+### Sponsors & Supporters
 
 *Your support keeps this project maintained and improved*
 
@@ -1197,12 +1197,13 @@ Found a bug? Have a feature idea? [Open an issue](https://github.com/masabinhok/
 ---
 
 <sub>
-⚡ Generated projects follow <strong>NestJS best practices</strong> and <strong>OWASP security guidelines</strong><br>
-📦 <strong>1.1.0</strong> • Updated November 2025 • MIT License
+ Generated projects follow <strong>NestJS best practices</strong> and <strong>OWASP security guidelines</strong><br>
+ <strong>1.1.0</strong>  Updated November 2025  MIT License
 </sub>
 
 <br><br>
 
-**Now go build something amazing! 🚀**
+**Now go build something amazing! **
 
 </div>
+
