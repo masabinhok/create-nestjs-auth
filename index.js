@@ -334,13 +334,19 @@ program
         process.exit(1);
       }
 
-      // Copy template files (exclude .git directory)
+      // Copy template files (exclude .git directory but keep .gitignore)
       console.log(chalk.gray('   Copying template files...'));
       await fs.copy(templateDir, targetDir, {
         filter: (src) => {
           const relativePath = path.relative(templateDir, src);
+          const basename = path.basename(src);
+          
+          // Keep .gitignore and other dot files except .git directory
+          if (basename === '.gitignore') return true;
+          
           // Exclude .git directory and node_modules
-          return !relativePath.startsWith('.git') && 
+          return !relativePath.startsWith('.git' + path.sep) && 
+                 relativePath !== '.git' &&
                  !relativePath.includes('node_modules') &&
                  !relativePath.includes('dist');
         }
