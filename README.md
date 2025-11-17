@@ -16,7 +16,7 @@ Get a battle-tested, production-ready NestJS auth system in **under 3 minutes**.
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
 ```bash
-npx create-nestjs-auth
+npx create-nestjs-auth@latest
 ```
 
 [Quick Start](#-quick-start) • [Features](#-what-you-get) • [Demo](#-see-it-in-action) • [Docs](#-links--resources)
@@ -73,7 +73,7 @@ Building secure JWT authentication isn't trivial. You need:
 
 ```bash
 # Run the CLI
-npx create-nestjs-auth
+npx create-nestjs-auth@latest
 
 # Answer 7 quick questions
 # ✅ Project name
@@ -182,7 +182,7 @@ npx create-nestjs-auth
 
 ```bash
 # 1. Create project (10 seconds)
-npx create-nestjs-auth my-api
+npx create-nestjs-auth@latest my-api
 
 # 2. Answer prompts (20 seconds)
 # ✓ Project name: my-api
@@ -305,7 +305,7 @@ my-app/
 **Zero configuration. Just answer questions:**
 
 ```bash
-npx create-nestjs-auth
+npx create-nestjs-auth@latest
 ```
 
 The CLI guides you through:
@@ -325,7 +325,7 @@ The CLI guides you through:
 **Fastest way to get started:**
 
 ```bash
-npx create-nestjs-auth my-app
+npx create-nestjs-auth@latest my-app
 cd my-app
 # Edit .env with your database URL
 npm run prisma:generate && npm run prisma:migrate && npm start:dev
@@ -339,19 +339,19 @@ npm run prisma:generate && npm run prisma:migrate && npm start:dev
 
 ```bash
 # Skip all prompts, use defaults
-npx create-nestjs-auth my-app --yes
+npx create-nestjs-auth@latest my-app --yes
 
 # Custom package manager
-npx create-nestjs-auth my-app --package-manager pnpm
+npx create-nestjs-auth@latest my-app --package-manager pnpm
 
 # Skip dependency installation
-npx create-nestjs-auth my-app --skip-install
+npx create-nestjs-auth@latest my-app --skip-install
 
 # Skip git initialization
-npx create-nestjs-auth my-app --skip-git
+npx create-nestjs-auth@latest my-app --skip-git
 
 # Combine options
-npx create-nestjs-auth my-app --yes --skip-git --package-manager bun
+npx create-nestjs-auth@latest my-app --yes --skip-git --package-manager bun
 ```
 
 **Perfect for:** CI/CD pipelines, automation scripts, Docker builds
@@ -474,12 +474,12 @@ export class PostsController {
 
 | Option | Description | Example |
 |--------|-------------|---------|
-| `--yes` | Skip all prompts, use defaults | `npx create-nestjs-auth my-app --yes` |
-| `--skip-install` | Don't install dependencies | `npx create-nestjs-auth my-app --skip-install` |
-| `--package-manager <pm>` | Force package manager (npm, pnpm, yarn, bun) | `npx create-nestjs-auth my-app --package-manager pnpm` |
-| `--skip-git` | Don't initialize git repository | `npx create-nestjs-auth my-app --skip-git` |
-| `--help` | Show help message | `npx create-nestjs-auth --help` |
-| `--version` | Show CLI version | `npx create-nestjs-auth --version` |
+| `--yes` | Skip all prompts, use defaults | `npx create-nestjs-auth@latest my-app --yes` |
+| `--skip-install` | Don't install dependencies | `npx create-nestjs-auth@latest my-app --skip-install` |
+| `--package-manager <pm>` | Force package manager (npm, pnpm, yarn, bun) | `npx create-nestjs-auth@latest my-app --package-manager pnpm` |
+| `--skip-git` | Don't initialize git repository | `npx create-nestjs-auth@latest my-app --skip-git` |
+| `--help` | Show help message | `npx create-nestjs-auth@latest --help` |
+| `--version` | Show CLI version | `npx create-nestjs-auth@latest --version` |
 
 ---
 
@@ -772,9 +772,9 @@ Passport is great, but it's just **one piece** of the puzzle. You still need:
 <details>
 <summary><b>❌ "Command not found: create-nestjs-auth"</b></summary>
 
-Use `npx` instead of installing globally:
+Use `npx` with `@latest` tag:
 ```bash
-npx create-nestjs-auth my-app
+npx create-nestjs-auth@latest my-app
 ```
 
 Or install globally:
@@ -1081,7 +1081,7 @@ Yes! Just run the CLI in your monorepo's apps or packages directory:
 
 ```bash
 cd apps/backend
-npx create-nestjs-auth api
+npx create-nestjs-auth@latest api
 ```
 
 </details>

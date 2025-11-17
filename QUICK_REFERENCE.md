@@ -4,10 +4,10 @@
 
 ```bash
 # Interactive mode (recommended) - will prompt for options
-npx create-nestjs-auth
+npx create-nestjs-auth@latest
 
 # Or provide app name directly
-npx create-nestjs-auth my-app
+npx create-nestjs-auth@latest my-app
 
 # Or install globally
 npm install -g create-nestjs-auth
@@ -18,24 +18,24 @@ create-nestjs-auth
 
 ```bash
 # Interactive mode - prompts for project details
-create-nestjs-auth
+npx create-nestjs-auth@latest
 
 # Basic usage with app name
-create-nestjs-auth <app-name>
+npx create-nestjs-auth@latest <app-name>
 
 # Non-interactive mode (use defaults)
-create-nestjs-auth my-app --yes
+npx create-nestjs-auth@latest my-app --yes
 
 # With options
-create-nestjs-auth my-app --skip-install
-create-nestjs-auth my-app --package-manager pnpm
-create-nestjs-auth my-app --skip-git
+npx create-nestjs-auth@latest my-app --skip-install
+npx create-nestjs-auth@latest my-app --package-manager pnpm
+npx create-nestjs-auth@latest my-app --skip-git
 
 # Get help
-create-nestjs-auth --help
+npx create-nestjs-auth@latest --help
 
 # Check version
-create-nestjs-auth --version
+npx create-nestjs-auth@latest --version
 ```
 
 ## Options
@@ -158,7 +158,7 @@ curl http://localhost:8080/api/v1/users -b cookies.txt
 ### CLI Issues
 
 **Problem**: Command not found  
-**Solution**: Use `npx create-nestjs-auth my-app`
+**Solution**: Use `npx create-nestjs-auth@latest my-app`
 
 **Problem**: Template not found  
 **Solution**: Reinstall - `npm install -g create-nestjs-auth`
