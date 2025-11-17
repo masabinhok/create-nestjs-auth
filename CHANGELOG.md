@@ -43,12 +43,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validation to prevent directory traversal attacks
 - Proper handling of environment variables
 
+## [1.1.0] - 2025-11-17
+
+### Added
+- ✨ **Interactive Mode** - Run without arguments for guided setup
+- 🎯 **Project Name Prompt** - Interactive project name input with validation
+- 📦 **Package Manager Selection** - Choose from npm, pnpm, yarn, or bun with auto-detection
+- 🔧 **Setup Preferences** - Interactive prompts for git and dependency installation
+- 🔑 **Automatic JWT Secret Generation** - No need for manual `openssl` commands
+- 🗄️ **Database URL Prompt** - Guided PostgreSQL connection string input
+- 📊 **Interactive Database Setup** - Automatic Prisma generate, migrate, and seed
+- 🚀 **Dev Server Auto-start** - Option to start development server immediately
+- 🎨 **Enhanced User Experience** - Beautiful prompts with defaults and validation
+- 📝 **Post-Setup Workflow** - Complete end-to-end interactive configuration
+- `--yes` flag - Skip all prompts for CI/CD and automation
+
+### Changed
+- Made `app-name` argument optional (prompts if not provided)
+- Updated CLI description to emphasize "Prisma + PostgreSQL"
+- Improved success messages with interactive setup flow
+- Enhanced documentation with interactive mode examples
+- Updated README with two setup options (interactive vs manual)
+- Reorganized post-creation instructions for clarity
+
+### Dependencies
+- Added `inquirer@^8.2.7` for interactive prompts
+
+### Documentation
+- Added INTERACTIVE_SETUP.md - Comprehensive interactive mode guide
+- Updated README.md with interactive mode section
+- Updated QUICK_REFERENCE.md with new commands
+- Added example interactive session outputs
+
 ## [Unreleased]
 
 ### Planned
 - Support for custom templates
 - Progress indicators for long-running operations
-- Option to use SQLite or MongoDB instead of PostgreSQL
 - Template customization wizard
 - Automatic Docker setup option
 - CI/CD configuration templates
@@ -57,5 +88,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.1.0** - Added interactive mode and post-setup automation (2025-11-17)
 - **1.0.0** - Major refactor with comprehensive improvements (2025-11-16)
 - **0.1.0** - Initial basic version (pre-refactor)

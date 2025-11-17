@@ -287,7 +287,7 @@ async function handlePostSetup(targetDir, appName, packageManager, skipInstall, 
 
 program
   .name('create-nestjs-auth')
-  .version('1.0.0')
+  .version('1.1.0')
   .description('Create a production-ready NestJS authentication system with Prisma + PostgreSQL')
   .argument('[app-name]', 'Name of your application (optional - will prompt if not provided)')
   .option('--skip-install', 'Skip automatic dependency installation')
