@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions & Discussions
+    url: https://github.com/masabinhok/create-nestjs-auth/discussions
+    about: Ask questions, share ideas, or discuss the project
+  - name: Documentation
+    url: https://github.com/masabinhok/create-nestjs-auth#readme
+    about: Read the full documentation and guides
+  - name: Template Repository
+    url: https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate
+    about: View the full template documentation
