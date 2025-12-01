@@ -47,7 +47,7 @@
    },
    "files": [
       "index.js",
-      "template",
+      "templates",
       "README.md",
       "LICENSE"
    ],
