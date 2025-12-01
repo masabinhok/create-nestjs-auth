@@ -104,11 +104,21 @@ export class AuthService {
 
   async logout(userId: string, refreshToken?: string) {
     if (refreshToken) {
-      // Revoke the specific refresh token
-      await this.db
-        .update(refreshTokens)
-        .set({ isRevoked: true, updatedAt: new Date() })
-        .where(and(eq(refreshTokens.token, refreshToken), eq(refreshTokens.userId, userId)));
+      // Find and revoke the specific refresh token by comparing hashes
+      const storedTokens = await this.db.query.refreshTokens.findMany({
+        where: eq(refreshTokens.userId, userId),
+      });
+
+      for (const storedToken of storedTokens) {
+        const matches = await bcrypt.compare(refreshToken, storedToken.token);
+        if (matches) {
+          await this.db
+            .update(refreshTokens)
+            .set({ isRevoked: true, updatedAt: new Date() })
+            .where(eq(refreshTokens.id, storedToken.id));
+          break;
+        }
+      }
     } else {
       // Logout from all devices - revoke all refresh tokens for this user
       await this.db
@@ -135,7 +145,7 @@ export class AuthService {
       throw new ForbiddenException('Invalid refresh token');
     }
 
-    // Find matching refresh token in database
+    // Find matching refresh token in database by comparing hashes
     const storedTokens = await this.db.query.refreshTokens.findMany({
       where: and(
         eq(refreshTokens.userId, userId),
@@ -145,9 +155,12 @@ export class AuthService {
 
     let validToken = null;
     for (const storedToken of storedTokens) {
-      if (storedToken.token === rt && new Date() < storedToken.expiresAt) {
-        validToken = storedToken;
-        break;
+      if (new Date() < storedToken.expiresAt) {
+        const matches = await bcrypt.compare(rt, storedToken.token);
+        if (matches) {
+          validToken = storedToken;
+          break;
+        }
       }
     }
 
@@ -228,8 +241,11 @@ export class AuthService {
     const expiresIn = this.configService.get<string>('JWT_REFRESH_EXPIRY') || '7d';
     const expiresAt = this.calculateExpiry(expiresIn);
 
+    // Hash the refresh token before storing
+    const hashedToken = await this.hashData(token);
+
     await this.db.insert(refreshTokens).values({
-      token,
+      token: hashedToken,
       userId,
       userAgent,
       ipAddress,
