@@ -6,58 +6,7 @@ const { execSync } = require('child_process');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 
-// ==================== CONFIGURATION ====================
-
-const ORM_OPTIONS = {
-  prisma: {
-    name: 'Prisma',
-    description: 'Next-generation ORM with type safety',
-    databases: ['postgres', 'mysql', 'sqlite', 'mongodb'],
-  },
-  // Future ORMs can be added here:
-  // typeorm: {
-  //   name: 'TypeORM',
-  //   description: 'Traditional ORM with decorators',
-  //   databases: ['postgres', 'mysql', 'sqlite', 'mongodb'],
-  // },
-  // mongoose: {
-  //   name: 'Mongoose',
-  //   description: 'MongoDB ODM',
-  //   databases: ['mongodb'],
-  // },
-  // drizzle: {
-  //   name: 'Drizzle',
-  //   description: 'Lightweight TypeScript ORM',
-  //   databases: ['postgres', 'mysql', 'sqlite'],
-  // },
-};
-
-const DATABASE_OPTIONS = {
-  postgres: {
-    name: 'PostgreSQL',
-    urlTemplate: 'postgresql://user:password@localhost:5432/database_name',
-    urlPrefix: ['postgresql://', 'postgres://'],
-  },
-  mysql: {
-    name: 'MySQL',
-    urlTemplate: 'mysql://user:password@localhost:3306/database_name',
-    urlPrefix: ['mysql://'],
-  },
-  sqlite: {
-    name: 'SQLite',
-    urlTemplate: 'file:./dev.db',
-    urlPrefix: ['file:'],
-    devOnly: true,
-  },
-  mongodb: {
-    name: 'MongoDB',
-    urlTemplate: 'mongodb://user:password@localhost:27017/database_name',
-    urlPrefix: ['mongodb://', 'mongodb+srv://'],
-  },
-};
-
-// ==================== VALIDATION HELPERS ====================
-
+// Validation helpers
 function validateAppName(name) {
   if (!/^[a-z0-9-_@/]+$/i.test(name)) {
     console.error(chalk.red('❌ App name must contain only letters, numbers, hyphens, underscores, @ and /'));
@@ -128,8 +77,6 @@ function generateJWTSecret() {
   return crypto.randomBytes(32).toString('base64');
 }
 
-// ==================== PROMPTS ====================
-
 async function promptForProjectDetails(providedAppName, options) {
   const questions = [];
 
@@ -156,45 +103,6 @@ async function promptForProjectDetails(providedAppName, options) {
         }
         return true;
       }
-    });
-  }
-
-  // Ask for ORM if not in yes mode
-  if (!options.yes) {
-    const availableOrms = Object.entries(ORM_OPTIONS);
-    questions.push({
-      type: 'list',
-      name: 'orm',
-      message: 'Which ORM would you like to use?',
-      choices: availableOrms.map(([key, value]) => ({
-        name: `${value.name} - ${value.description}`,
-        value: key,
-      })),
-      default: 'prisma',
-    });
-  }
-
-  // Ask for database if not in yes mode
-  if (!options.yes) {
-    questions.push({
-      type: 'list',
-      name: 'database',
-      message: 'Which database would you like to use?',
-      choices: (answers) => {
-        const selectedOrm = answers.orm || 'prisma';
-        const supportedDatabases = ORM_OPTIONS[selectedOrm]?.databases || ['postgres'];
-        
-        return supportedDatabases.map((db) => {
-          const dbInfo = DATABASE_OPTIONS[db];
-          const suffix = dbInfo.devOnly ? ' (Development only)' : '';
-          const recommended = db === 'postgres' ? ' (Recommended)' : '';
-          return {
-            name: `${dbInfo.name}${recommended}${suffix}`,
-            value: db,
-          };
-        });
-      },
-      default: 'postgres',
     });
   }
 
@@ -239,93 +147,19 @@ async function promptForProjectDetails(providedAppName, options) {
 
   return {
     appName: providedAppName || answers.appName,
-    orm: options.orm || answers.orm || 'prisma',
-    database: options.database || answers.database || 'postgres',
     packageManager: options.packageManager || answers.packageManager || detectPackageManager(),
     installDependencies: options.skipInstall ? false : (answers.installDependencies !== false),
     initializeGit: options.skipGit ? false : (answers.initializeGit !== false)
   };
 }
 
-// ==================== PROJECT GENERATION ====================
-
-async function generateProject(targetDir, options) {
-  const { orm, database } = options;
-  const templatesDir = path.join(__dirname, 'templates');
-  
-  // Check if new template structure exists, fall back to old structure
-  const baseDir = path.join(templatesDir, 'base');
-  const ormDir = path.join(templatesDir, 'orm', orm);
-  const dbDir = path.join(templatesDir, 'database', database);
-  
-  const useNewStructure = await fs.pathExists(baseDir);
-  
-  if (useNewStructure) {
-    console.log(chalk.gray('   Using modular template structure...'));
-    
-    // Step 1: Copy base template (shared code)
-    console.log(chalk.gray('   Copying base template...'));
-    await fs.copy(baseDir, targetDir, {
-      filter: (src) => !src.includes('node_modules') && !src.includes('.git'),
-    });
-
-    // Step 2: Copy ORM-specific files (overwrites base where needed)
-    if (await fs.pathExists(ormDir)) {
-      console.log(chalk.gray(`   Applying ${ORM_OPTIONS[orm]?.name || orm} adapter...`));
-      await fs.copy(ormDir, targetDir, {
-        overwrite: true,
-        filter: (src) => !src.includes('node_modules'),
-      });
-    }
-
-    // Step 3: Copy database-specific files
-    if (await fs.pathExists(dbDir)) {
-      console.log(chalk.gray(`   Configuring for ${DATABASE_OPTIONS[database]?.name || database}...`));
-      await fs.copy(dbDir, targetDir, {
-        overwrite: true,
-        filter: (src) => !src.includes('node_modules'),
-      });
-    }
-  } else {
-    // Fall back to old single template structure
-    console.log(chalk.gray('   Using legacy template structure...'));
-    const templateDir = path.join(__dirname, 'template');
-    
-    if (!(await fs.pathExists(templateDir))) {
-      console.error(chalk.red('❌ Template directory not found'));
-      console.error(chalk.yellow('   Please reinstall create-nestjs-auth: npm install -g create-nestjs-auth'));
-      process.exit(1);
-    }
-
-    await fs.copy(templateDir, targetDir, {
-      filter: (src) => {
-        const relativePath = path.relative(templateDir, src);
-        const basename = path.basename(src);
-        if (basename === '.gitignore') return true;
-        return !relativePath.startsWith('.git' + path.sep) && 
-               relativePath !== '.git' &&
-               !relativePath.includes('node_modules') &&
-               !relativePath.includes('dist');
-      }
-    });
-  }
-}
-
-// ==================== POST SETUP ====================
-
-async function handlePostSetup(targetDir, appName, options) {
-  const { packageManager, orm, database } = options;
-  const isYesMode = options.yes;
-  const skipInstall = options.skipInstall;
-
+async function handlePostSetup(targetDir, appName, packageManager, skipInstall, isYesMode) {
   // Skip if user used --yes flag or if dependencies weren't installed
   if (isYesMode || skipInstall) {
-    return false;
+    return false; // Return false to show manual instructions
   }
 
   console.log(chalk.green('\n✅ Success! Created ' + chalk.bold(appName)));
-  console.log(chalk.gray(`   ORM: ${ORM_OPTIONS[orm]?.name || orm}`));
-  console.log(chalk.gray(`   Database: ${DATABASE_OPTIONS[database]?.name || database}`));
   console.log(chalk.white('\n🎉 Your project is ready!\n'));
 
   // Ask if user wants to continue with interactive setup
@@ -337,7 +171,7 @@ async function handlePostSetup(targetDir, appName, options) {
   }]);
 
   if (!continueSetup) {
-    return false;
+    return false; // Return false to show manual instructions
   }
 
   // Generate JWT secrets
@@ -349,19 +183,17 @@ async function handlePostSetup(targetDir, appName, options) {
   console.log(chalk.gray('   Generated JWT_REFRESH_SECRET\n'));
 
   // Ask for database URL
-  const dbInfo = DATABASE_OPTIONS[database];
   const { databaseUrl } = await inquirer.prompt([{
     type: 'input',
     name: 'databaseUrl',
-    message: `Enter your ${dbInfo.name} database URL:`,
-    default: dbInfo.urlTemplate,
+    message: 'Enter your PostgreSQL database URL:',
+    default: 'postgresql://user:password@localhost:5432/mydb',
     validate: (input) => {
       if (!input || input.trim() === '') {
         return 'Database URL is required';
       }
-      const validPrefix = dbInfo.urlPrefix.some(prefix => input.startsWith(prefix));
-      if (!validPrefix) {
-        return `Database URL must start with ${dbInfo.urlPrefix.join(' or ')}`;
+      if (!input.startsWith('postgresql://') && !input.startsWith('postgres://')) {
+        return 'Database URL must start with postgresql:// or postgres://';
       }
       return true;
     }
@@ -374,6 +206,7 @@ async function handlePostSetup(targetDir, appName, options) {
   try {
     let envContent = await fs.readFile(envPath, 'utf8');
     
+    // Replace placeholders
     envContent = envContent.replace(/DATABASE_URL=.*/, `DATABASE_URL="${databaseUrl}"`);
     envContent = envContent.replace(/JWT_ACCESS_SECRET=.*/, `JWT_ACCESS_SECRET="${accessSecret}"`);
     envContent = envContent.replace(/JWT_REFRESH_SECRET=.*/, `JWT_REFRESH_SECRET="${refreshSecret}"`);
@@ -385,43 +218,44 @@ async function handlePostSetup(targetDir, appName, options) {
     return false;
   }
 
-  // Ask if user wants to setup database (ORM-specific)
-  if (orm === 'prisma') {
-    const { setupDatabase } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'setupDatabase',
-      message: 'Set up the database now? (generate Prisma client, run migrations, seed)',
-      default: true
-    }]);
+  // Ask if user wants to setup database
+  const { setupDatabase } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'setupDatabase',
+    message: 'Set up the database now? (generate Prisma client, run migrations, seed)',
+    default: true
+  }]);
 
-    if (setupDatabase) {
-      console.log(chalk.yellow('\n📦 Setting up database...\n'));
+  if (setupDatabase) {
+    console.log(chalk.yellow('\n📦 Setting up database...\n'));
+    
+    const pmPrefix = packageManager === 'npm' ? 'npm run' : packageManager;
+    
+    try {
+      // Generate Prisma client
+      console.log(chalk.gray('   Generating Prisma client...'));
+      execSync(`${pmPrefix} prisma:generate`, { cwd: targetDir, stdio: 'inherit' });
       
-      const pmPrefix = packageManager === 'npm' ? 'npm run' : packageManager;
+      // Run migrations
+      console.log(chalk.gray('\n   Running database migrations...'));
+      execSync(`${pmPrefix} prisma:migrate`, { cwd: targetDir, stdio: 'inherit' });
       
-      try {
-        console.log(chalk.gray('   Generating Prisma client...'));
-        execSync(`${pmPrefix} prisma:generate`, { cwd: targetDir, stdio: 'inherit' });
-        
-        console.log(chalk.gray('\n   Running database migrations...'));
-        execSync(`${pmPrefix} prisma:migrate`, { cwd: targetDir, stdio: 'inherit' });
-        
-        console.log(chalk.gray('\n   Seeding database with default admin user...'));
-        execSync(`${pmPrefix} prisma:seed`, { cwd: targetDir, stdio: 'inherit' });
-        
-        console.log(chalk.green('\n   ✓ Database setup complete!\n'));
-        
-        console.log(chalk.cyan('   📝 Default admin credentials:'));
-        console.log(chalk.white('      Email:    admin@example.com'));
-        console.log(chalk.white('      Password: Admin@123\n'));
-      } catch (error) {
-        console.error(chalk.red('\n   ✗ Database setup failed'));
-        console.error(chalk.yellow('   You can run these commands manually:'));
-        console.error(chalk.gray(`     ${pmPrefix} prisma:generate`));
-        console.error(chalk.gray(`     ${pmPrefix} prisma:migrate`));
-        console.error(chalk.gray(`     ${pmPrefix} prisma:seed\n`));
-        return false;
-      }
+      // Seed database
+      console.log(chalk.gray('\n   Seeding database with default admin user...'));
+      execSync(`${pmPrefix} prisma:seed`, { cwd: targetDir, stdio: 'inherit' });
+      
+      console.log(chalk.green('\n   ✓ Database setup complete!\n'));
+      
+      console.log(chalk.cyan('   📝 Default admin credentials:'));
+      console.log(chalk.white('      Email:    admin@example.com'));
+      console.log(chalk.white('      Password: Admin@123\n'));
+    } catch (error) {
+      console.error(chalk.red('\n   ✗ Database setup failed'));
+      console.error(chalk.yellow('   You can run these commands manually:'));
+      console.error(chalk.gray(`     ${pmPrefix} prisma:generate`));
+      console.error(chalk.gray(`     ${pmPrefix} prisma:migrate`));
+      console.error(chalk.gray(`     ${pmPrefix} prisma:seed\n`));
+      return false;
     }
   }
 
@@ -443,37 +277,39 @@ async function handlePostSetup(targetDir, appName, options) {
     try {
       execSync(`${pmPrefix} start:dev`, { cwd: targetDir, stdio: 'inherit' });
     } catch (error) {
+      // User likely pressed Ctrl+C, which is expected behavior
       console.log(chalk.yellow('\n   Server stopped.'));
     }
   }
 
-  return true;
+  return true; // Successfully completed interactive setup
 }
-
-// ==================== MAIN CLI ====================
 
 program
   .name('create-nestjs-auth')
-  .version('2.0.0')
-  .description('Create a production-ready NestJS authentication system with your choice of ORM and database')
+  .version('1.1.2')
+  .description('Create a production-ready NestJS authentication system with Prisma + PostgreSQL')
   .argument('[app-name]', 'Name of your application (optional - will prompt if not provided)')
   .option('--skip-install', 'Skip automatic dependency installation')
   .option('--package-manager <pm>', 'Package manager to use (npm|pnpm|yarn|bun)')
   .option('--skip-git', 'Skip git repository initialization')
-  .option('--orm <orm>', 'ORM to use (prisma)')
-  .option('--database <db>', 'Database to use (postgres|mysql|sqlite|mongodb)')
   .option('--yes', 'Skip all prompts and use defaults')
   .action(async (appName, options) => {
     try {
-      console.log(chalk.cyan('\n⚡️ create-nestjs-auth v2.0\n'));
-      console.log(chalk.gray('Production-ready NestJS authentication - Now with ORM & Database choices!\n'));
+      console.log(chalk.cyan('\n⚡️ create-nestjs-auth\n'));
+      console.log(chalk.gray('Production-ready NestJS authentication with Prisma + PostgreSQL\n'));
 
       // Check Node.js version
       checkNodeVersion();
 
       // Interactive mode - prompt for missing information
-      const projectOptions = await promptForProjectDetails(appName, options);
-      appName = projectOptions.appName;
+      if (!appName || !options.yes) {
+        const answers = await promptForProjectDetails(appName, options);
+        appName = answers.appName;
+        options.packageManager = answers.packageManager;
+        options.skipInstall = !answers.installDependencies;
+        options.skipGit = !answers.initializeGit;
+      }
 
       // Validate app name
       validateAppName(appName);
@@ -487,12 +323,34 @@ program
         process.exit(1);
       }
 
-      console.log(chalk.blue(`\n🚀 Creating ${chalk.bold(appName)}...`));
-      console.log(chalk.gray(`   ORM: ${ORM_OPTIONS[projectOptions.orm]?.name || projectOptions.orm}`));
-      console.log(chalk.gray(`   Database: ${DATABASE_OPTIONS[projectOptions.database]?.name || projectOptions.database}\n`));
+      console.log(chalk.blue(`🚀 Creating ${chalk.bold(appName)}...\n`));
+      
+      const templateDir = path.join(__dirname, 'template');
+      
+      // Verify template exists
+      if (!(await fs.pathExists(templateDir))) {
+        console.error(chalk.red('❌ Template directory not found'));
+        console.error(chalk.yellow('   Please reinstall create-nestjs-auth: npm install -g create-nestjs-auth'));
+        process.exit(1);
+      }
 
-      // Generate the project
-      await generateProject(targetDir, projectOptions);
+      // Copy template files (exclude .git directory but keep .gitignore)
+      console.log(chalk.gray('   Copying template files...'));
+      await fs.copy(templateDir, targetDir, {
+        filter: (src) => {
+          const relativePath = path.relative(templateDir, src);
+          const basename = path.basename(src);
+          
+          // Keep .gitignore and other dot files except .git directory
+          if (basename === '.gitignore') return true;
+          
+          // Exclude .git directory and node_modules
+          return !relativePath.startsWith('.git' + path.sep) && 
+                 relativePath !== '.git' &&
+                 !relativePath.includes('node_modules') &&
+                 !relativePath.includes('dist');
+        }
+      });
 
       // Update package.json
       console.log(chalk.gray('   Updating package.json...'));
@@ -502,7 +360,7 @@ program
         const packageJson = await fs.readJSON(packageJsonPath);
         packageJson.name = appName;
         packageJson.version = '0.0.1';
-        delete packageJson.private;
+        delete packageJson.private; // Allow publishing if user wants
         await fs.writeJSON(packageJsonPath, packageJson, { spaces: 2 });
       }
 
@@ -514,11 +372,13 @@ program
       if (await fs.pathExists(envExamplePath)) {
         const envExample = await fs.readFile(envExamplePath, 'utf8');
         await fs.writeFile(envPath, envExample);
+      } else {
+        console.warn(chalk.yellow('   ⚠️  .env.example not found, skipping .env creation'));
       }
 
       // Install dependencies
-      if (projectOptions.installDependencies) {
-        const pm = projectOptions.packageManager;
+      if (!options.skipInstall) {
+        const pm = options.packageManager || detectPackageManager();
         const installCmd = getInstallCommand(pm);
         
         console.log(chalk.yellow(`\n📦 Installing dependencies with ${chalk.bold(pm)}...`));
@@ -528,7 +388,7 @@ program
           execSync(installCmd, { 
             cwd: targetDir, 
             stdio: 'inherit',
-            timeout: 300000
+            timeout: 300000 // 5 minute timeout
           });
         } catch (error) {
           console.error(chalk.red('\n❌ Dependency installation failed'));
@@ -542,7 +402,7 @@ program
       }
 
       // Initialize git repository
-      if (projectOptions.initializeGit) {
+      if (!options.skipGit) {
         console.log(chalk.yellow('\n🔧 Initializing git repository...'));
         try {
           execSync('git init', { cwd: targetDir, stdio: 'ignore' });
@@ -563,23 +423,19 @@ program
       const completedInteractiveSetup = await handlePostSetup(
         targetDir, 
         appName, 
-        {
-          ...projectOptions,
-          skipInstall: !projectOptions.installDependencies,
-          yes: options.yes,
-        }
+        options.packageManager || detectPackageManager(),
+        options.skipInstall,
+        options.yes
       );
 
-      // Show manual instructions if interactive setup was skipped
+      // Show manual instructions if interactive setup was skipped or failed
       if (!completedInteractiveSetup) {
         console.log(chalk.green('\n✅ Success! Created ' + chalk.bold(appName)));
-        console.log(chalk.gray(`   ORM: ${ORM_OPTIONS[projectOptions.orm]?.name || projectOptions.orm}`));
-        console.log(chalk.gray(`   Database: ${DATABASE_OPTIONS[projectOptions.database]?.name || projectOptions.database}`));
         console.log(chalk.white('\n📚 Next steps:\n'));
         console.log(chalk.cyan(`   cd ${appName}`));
         
-        if (!projectOptions.installDependencies) {
-          const pm = projectOptions.packageManager;
+        if (options.skipInstall) {
+          const pm = options.packageManager || detectPackageManager();
           console.log(chalk.cyan(`   ${getInstallCommand(pm)}`));
         }
         
@@ -588,23 +444,21 @@ program
         console.log(chalk.gray('   openssl rand -base64 32  # For JWT_REFRESH_SECRET'));
         
         console.log(chalk.cyan('\n   # Edit .env with your database URL and JWT secrets'));
-        
-        if (projectOptions.orm === 'prisma') {
-          console.log(chalk.cyan('   # Then setup the database:'));
-          console.log(chalk.gray('   npm run prisma:generate'));
-          console.log(chalk.gray('   npm run prisma:migrate'));
-          console.log(chalk.gray('   npm run prisma:seed'));
-        }
+        console.log(chalk.cyan('   # Then setup the database:'));
+        console.log(chalk.gray('   npm run prisma:generate'));
+        console.log(chalk.gray('   npm run prisma:migrate'));
+        console.log(chalk.gray('   npm run prisma:seed'));
         
         console.log(chalk.cyan('\n   # Start development server:'));
         console.log(chalk.gray('   npm run start:dev'));
         
-        console.log(chalk.white('\n📖 Documentation: https://github.com/masabinhok/create-nestjs-auth'));
+        console.log(chalk.white('\n📖 Documentation: https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate'));
         console.log(chalk.white('🐛 Issues: https://github.com/masabinhok/create-nestjs-auth/issues\n'));
         
         console.log(chalk.magenta('Happy coding! 🎉\n'));
       } else {
-        console.log(chalk.white('\n📖 Documentation: https://github.com/masabinhok/create-nestjs-auth'));
+        // Interactive setup completed successfully
+        console.log(chalk.white('\n📖 Documentation: https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate'));
         console.log(chalk.white('🐛 Issues: https://github.com/masabinhok/create-nestjs-auth/issues\n'));
         console.log(chalk.magenta('Happy coding! 🎉\n'));
       }
