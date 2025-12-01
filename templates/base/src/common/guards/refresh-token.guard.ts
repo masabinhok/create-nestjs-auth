@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { COOKIE_CONFIG } from '../constants/cookie.config';
 
 @Injectable()
 export class RefreshTokenGuard implements CanActivate {
@@ -19,7 +20,7 @@ export class RefreshTokenGuard implements CanActivate {
       cookies: Record<string, string>;
       user?: unknown;
     }>();
-    const token = request.cookies['refreshToken'];
+    const token = request.cookies[COOKIE_CONFIG.REFRESH_TOKEN.name];
 
     if (!token || typeof token !== 'string') {
       throw new UnauthorizedException('Refresh Token missing or malformed');

@@ -70,7 +70,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const rt = req.cookies['refreshToken'] as string;
+    const rt = req.cookies[COOKIE_CONFIG.REFRESH_TOKEN.name] as string;
     const deviceInfo = req.headers['user-agent'] || 'Unknown Device';
     const ipAddress =
       (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
@@ -108,7 +108,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const rt = req.cookies['refreshToken'] as string | undefined;
+    const rt = req.cookies[COOKIE_CONFIG.REFRESH_TOKEN.name] as string | undefined;
     await this.authService.logout(userId, rt);
 
     res.clearCookie(

@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { COOKIE_CONFIG } from '../constants/cookie.config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -30,7 +31,7 @@ export class AuthGuard implements CanActivate {
       cookies: Record<string, string>;
       user?: unknown;
     }>();
-    const token = request.cookies['accessToken'];
+    const token = request.cookies[COOKIE_CONFIG.ACCESS_TOKEN.name];
 
     if (!token || typeof token !== 'string') {
       throw new UnauthorizedException('Access Token missing or malformed');
