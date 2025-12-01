@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -21,54 +20,12 @@ export class UsersService {
     @InjectModel(RefreshToken.name) private refreshTokenModel: Model<RefreshTokenDocument>,
   ) {}
 
-  async findById(id: string) {
-    const user = await this.userModel.findById(id).select('-password');
+  async getProfile(userId: string) {
+    const user = await this.userModel.findById(userId).select('-password');
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return {
-      id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
-  }
-
-  async findAll(page: number = 1, limit: number = 10) {
-    const skip = (page - 1) * limit;
-
-    const [users, total] = await Promise.all([
-      this.userModel
-        .find()
-        .select('-password')
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 }),
-      this.userModel.countDocuments(),
-    ]);
-
-    return {
-      data: users.map((user) => ({
-        id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      })),
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
-
-  async getProfile(userId: string) {
-    return this.findById(userId);
+    return this.sanitizeUser(user);
   }
 
   async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
@@ -103,30 +60,57 @@ export class UsersService {
       .findByIdAndUpdate(userId, updateData, { new: true })
       .select('-password');
 
+    return this.sanitizeUser(updatedUser);
+  }
+
+  // Admin methods
+
+  async getAllUsers(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    const [usersList, total] = await Promise.all([
+      this.userModel
+        .find()
+        .select('-password')
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 }),
+      this.userModel.countDocuments(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
     return {
-      id: updatedUser._id.toString(),
-      name: updatedUser.name,
-      email: updatedUser.email,
-      role: updatedUser.role,
-      createdAt: updatedUser.createdAt,
-      updatedAt: updatedUser.updatedAt,
+      data: usersList.map((user) => this.sanitizeUser(user)),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrevious: page > 1,
+      },
     };
   }
 
-  async updateUser(
-    adminId: string,
-    userId: string,
-    updateUserDto: UpdateUserDto,
-  ) {
+  async getUserById(userId: string) {
+    if (!userId) {
+      return null;
+    }
+
+    const user = await this.userModel.findById(userId).select('-password');
+    if (!user) {
+      return null;
+    }
+
+    return this.sanitizeUser(user);
+  }
+
+  async updateUserById(userId: string, updateUserDto: UpdateUserDto) {
     // Check if user exists
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
-    }
-
-    // Prevent admin from demoting themselves
-    if (userId === adminId && updateUserDto.role && updateUserDto.role !== Role.ADMIN) {
-      throw new ForbiddenException('Cannot change your own role');
     }
 
     // Check if email is being changed and if it's already taken
@@ -156,22 +140,10 @@ export class UsersService {
       .findByIdAndUpdate(userId, updateData, { new: true })
       .select('-password');
 
-    return {
-      id: updatedUser._id.toString(),
-      name: updatedUser.name,
-      email: updatedUser.email,
-      role: updatedUser.role,
-      createdAt: updatedUser.createdAt,
-      updatedAt: updatedUser.updatedAt,
-    };
+    return this.sanitizeUser(updatedUser);
   }
 
-  async deleteUser(adminId: string, userId: string) {
-    // Prevent admin from deleting themselves
-    if (userId === adminId) {
-      throw new ForbiddenException('Cannot delete your own account');
-    }
-
+  async deleteUserById(userId: string) {
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -184,5 +156,22 @@ export class UsersService {
     await this.userModel.findByIdAndDelete(userId);
 
     return { message: 'User deleted successfully' };
+  }
+
+  // Utils
+
+  private sanitizeUser(user: UserDocument | null) {
+    if (!user) {
+      return null;
+    }
+
+    return {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 }

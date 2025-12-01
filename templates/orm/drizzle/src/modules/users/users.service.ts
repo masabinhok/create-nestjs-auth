@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
-  ForbiddenException,
   Inject,
 } from '@nestjs/common';
 import { eq, ne, and, desc, count } from 'drizzle-orm';
@@ -19,59 +18,16 @@ const SALT_ROUNDS = 12;
 export class UsersService {
   constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
 
-  async findById(id: string) {
+  async getProfile(userId: string) {
     const user = await this.db.query.users.findFirst({
-      where: eq(users.id, id),
+      where: eq(users.id, userId),
     });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
-  }
-
-  async findAll(page: number = 1, limit: number = 10) {
-    const offset = (page - 1) * limit;
-
-    const [userList, totalResult] = await Promise.all([
-      this.db.query.users.findMany({
-        offset,
-        limit,
-        orderBy: [desc(users.createdAt)],
-      }),
-      this.db.select({ count: count() }).from(users),
-    ]);
-
-    const total = totalResult[0].count;
-
-    return {
-      data: userList.map((user) => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      })),
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
-
-  async getProfile(userId: string) {
-    return this.findById(userId);
+    return this.sanitizeUser(user);
   }
 
   async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
@@ -114,21 +70,56 @@ export class UsersService {
       .where(eq(users.id, userId))
       .returning();
 
+    return this.sanitizeUser(updatedUser);
+  }
+
+  // Admin methods
+
+  async getAllUsers(page: number = 1, limit: number = 10) {
+    const offset = (page - 1) * limit;
+
+    const [userList, totalResult] = await Promise.all([
+      this.db.query.users.findMany({
+        offset,
+        limit,
+        orderBy: [desc(users.createdAt)],
+      }),
+      this.db.select({ count: count() }).from(users),
+    ]);
+
+    const total = totalResult[0].count;
+    const totalPages = Math.ceil(total / limit);
+
     return {
-      id: updatedUser.id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      role: updatedUser.role,
-      createdAt: updatedUser.createdAt,
-      updatedAt: updatedUser.updatedAt,
+      data: userList.map((user) => this.sanitizeUser(user)),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrevious: page > 1,
+      },
     };
   }
 
-  async updateUser(
-    adminId: string,
-    userId: string,
-    updateUserDto: UpdateUserDto,
-  ) {
+  async getUserById(userId: string) {
+    if (!userId) {
+      return null;
+    }
+
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return this.sanitizeUser(user);
+  }
+
+  async updateUserById(userId: string, updateUserDto: UpdateUserDto) {
     // Check if user exists
     const user = await this.db.query.users.findFirst({
       where: eq(users.id, userId),
@@ -136,11 +127,6 @@ export class UsersService {
 
     if (!user) {
       throw new NotFoundException('User not found');
-    }
-
-    // Prevent admin from demoting themselves
-    if (userId === adminId && updateUserDto.role && updateUserDto.role !== 'ADMIN') {
-      throw new ForbiddenException('Cannot change your own role');
     }
 
     // Check if email is being changed and if it's already taken
@@ -175,22 +161,10 @@ export class UsersService {
       .where(eq(users.id, userId))
       .returning();
 
-    return {
-      id: updatedUser.id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      role: updatedUser.role,
-      createdAt: updatedUser.createdAt,
-      updatedAt: updatedUser.updatedAt,
-    };
+    return this.sanitizeUser(updatedUser);
   }
 
-  async deleteUser(adminId: string, userId: string) {
-    // Prevent admin from deleting themselves
-    if (userId === adminId) {
-      throw new ForbiddenException('Cannot delete your own account');
-    }
-
+  async deleteUserById(userId: string) {
     const user = await this.db.query.users.findFirst({
       where: eq(users.id, userId),
     });
@@ -206,5 +180,16 @@ export class UsersService {
     await this.db.delete(users).where(eq(users.id, userId));
 
     return { message: 'User deleted successfully' };
+  }
+
+  // Utils
+
+  private sanitizeUser(user: any) {
+    if (!user) {
+      return null;
+    }
+
+    const { password, ...safeUser } = user;
+    return safeUser;
   }
 }

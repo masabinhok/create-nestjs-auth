@@ -2,19 +2,18 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
-  Inject,
+  ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { Request, Response } from 'express';
 import { User, UserDocument, Role } from '../../schemas/user.schema';
 import { RefreshToken, RefreshTokenDocument } from '../../schemas/refresh-token.schema';
 import { SignupDto } from './dtos/signup.dto';
 import { LoginDto } from './dtos/login.dto';
-import { COOKIE_CONFIG } from '../../common/constants/cookie.config';
 
 const SALT_ROUNDS = 12;
 
@@ -53,7 +52,7 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto, req: Request, res: Response) {
+  async login(loginDto: LoginDto, deviceInfo?: string, ipAddress?: string) {
     const { email, password } = loginDto;
 
     // Find user
@@ -75,12 +74,12 @@ export class AuthService {
     await this.storeRefreshToken(
       tokens.refreshToken,
       user._id.toString(),
-      req.headers['user-agent'] || 'unknown',
-      req.ip || 'unknown',
+      deviceInfo || 'Unknown Device',
+      ipAddress || 'Unknown IP',
     );
 
-    // Set cookies
-    this.setTokenCookies(res, tokens);
+    // Clean up expired tokens for this user
+    await this.cleanupExpiredTokens(user._id.toString());
 
     return {
       user: {
@@ -89,65 +88,62 @@ export class AuthService {
         email: user.email,
         role: user.role,
       },
-      accessToken: tokens.accessToken,
+      ...tokens,
     };
   }
 
-  async logout(userId: string, refreshToken: string, res: Response) {
-    // Revoke the refresh token
-    await this.refreshTokenModel.updateOne(
-      { token: refreshToken, userId },
-      { isRevoked: true },
-    );
-
-    // Clear cookies
-    this.clearTokenCookies(res);
+  async logout(userId: string, refreshToken?: string) {
+    if (refreshToken) {
+      // Revoke the specific refresh token
+      await this.refreshTokenModel.updateOne(
+        { token: refreshToken, userId },
+        { isRevoked: true },
+      );
+    } else {
+      // Logout from all devices - revoke all refresh tokens for this user
+      await this.refreshTokenModel.updateMany(
+        { userId, isRevoked: false },
+        { isRevoked: true },
+      );
+    }
 
     return { message: 'Logged out successfully' };
   }
 
-  async logoutAll(userId: string, res: Response) {
-    // Revoke all refresh tokens for this user
-    await this.refreshTokenModel.updateMany(
-      { userId, isRevoked: false },
-      { isRevoked: true },
-    );
+  async refreshToken(
+    userId: string,
+    rt: string,
+    deviceInfo?: string,
+    ipAddress?: string,
+  ) {
+    // Find the user
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new ForbiddenException('Invalid refresh token');
+    }
 
-    // Clear cookies
-    this.clearTokenCookies(res);
-
-    return { message: 'Logged out from all devices successfully' };
-  }
-
-  async refreshTokens(refreshToken: string, req: Request, res: Response) {
-    // Find the refresh token
-    const tokenRecord = await this.refreshTokenModel.findOne({
-      token: refreshToken,
+    // Find matching refresh token in database
+    const storedTokens = await this.refreshTokenModel.find({
+      userId,
       isRevoked: false,
+      expiresAt: { $gt: new Date() },
     });
 
-    if (!tokenRecord) {
+    let validToken = null;
+    for (const storedToken of storedTokens) {
+      if (storedToken.token === rt) {
+        validToken = storedToken;
+        break;
+      }
+    }
+
+    if (!validToken) {
       throw new UnauthorizedException('Invalid refresh token');
-    }
-
-    // Check if token is expired
-    if (new Date() > tokenRecord.expiresAt) {
-      await this.refreshTokenModel.updateOne(
-        { _id: tokenRecord._id },
-        { isRevoked: true },
-      );
-      throw new UnauthorizedException('Refresh token has expired');
-    }
-
-    // Find the user
-    const user = await this.userModel.findById(tokenRecord.userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
     }
 
     // Revoke old refresh token (token rotation)
     await this.refreshTokenModel.updateOne(
-      { _id: tokenRecord._id },
+      { _id: validToken._id },
       { isRevoked: true },
     );
 
@@ -158,56 +154,34 @@ export class AuthService {
     await this.storeRefreshToken(
       tokens.refreshToken,
       user._id.toString(),
-      req.headers['user-agent'] || 'unknown',
-      req.ip || 'unknown',
+      deviceInfo || 'Unknown Device',
+      ipAddress || 'Unknown IP',
     );
 
-    // Set new cookies
-    this.setTokenCookies(res, tokens);
+    return tokens;
+  }
+
+  async getMe(userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     return {
-      user: {
-        id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-      accessToken: tokens.accessToken,
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
     };
   }
 
-  async getActiveSessions(userId: string) {
-    const tokens = await this.refreshTokenModel.find({
-      userId,
-      isRevoked: false,
-      expiresAt: { $gt: new Date() },
-    }).sort({ createdAt: -1 });
+  // Helper Methods
 
-    return tokens.map((token) => ({
-      id: token._id.toString(),
-      userAgent: token.userAgent,
-      ipAddress: token.ipAddress,
-      createdAt: token.createdAt,
-      expiresAt: token.expiresAt,
-    }));
+  async hashData(data: string): Promise<string> {
+    return bcrypt.hash(data, SALT_ROUNDS);
   }
 
-  async revokeSession(userId: string, sessionId: string) {
-    const result = await this.refreshTokenModel.updateOne(
-      { _id: sessionId, userId },
-      { isRevoked: true },
-    );
-
-    if (result.modifiedCount === 0) {
-      throw new UnauthorizedException('Session not found');
-    }
-
-    return { message: 'Session revoked successfully' };
-  }
-
-  // Private helper methods
-
-  private async generateTokens(user: UserDocument) {
+  async generateTokens(user: UserDocument): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = {
       sub: user._id.toString(),
       email: user.email,
@@ -265,16 +239,14 @@ export class AuthService {
     return new Date(Date.now() + value * multipliers[unit]);
   }
 
-  private setTokenCookies(
-    res: Response,
-    tokens: { accessToken: string; refreshToken: string },
-  ) {
-    res.cookie('access_token', tokens.accessToken, COOKIE_CONFIG.ACCESS_TOKEN);
-    res.cookie('refresh_token', tokens.refreshToken, COOKIE_CONFIG.REFRESH_TOKEN);
-  }
-
-  private clearTokenCookies(res: Response) {
-    res.clearCookie('access_token', COOKIE_CONFIG.ACCESS_TOKEN);
-    res.clearCookie('refresh_token', COOKIE_CONFIG.REFRESH_TOKEN);
+  private async cleanupExpiredTokens(userId: string) {
+    // Remove expired/revoked refresh tokens for this user
+    await this.refreshTokenModel.deleteMany({
+      userId,
+      $or: [
+        { isRevoked: true },
+        { expiresAt: { $lt: new Date() } },
+      ],
+    });
   }
 }

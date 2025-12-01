@@ -2,19 +2,19 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  ForbiddenException,
+  NotFoundException,
   Inject,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { eq, and } from 'drizzle-orm';
 import * as bcrypt from 'bcrypt';
-import { Request, Response } from 'express';
 import { DRIZZLE } from '../../database/database.module';
 import { DrizzleDB } from '../../database/drizzle';
 import { users, refreshTokens, User } from '../../database/schema';
 import { SignupDto } from './dtos/signup.dto';
 import { LoginDto } from './dtos/login.dto';
-import { COOKIE_CONFIG } from '../../common/constants/cookie.config';
 
 const SALT_ROUNDS = 12;
 
@@ -59,7 +59,7 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto, req: Request, res: Response) {
+  async login(loginDto: LoginDto, deviceInfo?: string, ipAddress?: string) {
     const { email, password } = loginDto;
 
     // Find user
@@ -84,12 +84,12 @@ export class AuthService {
     await this.storeRefreshToken(
       tokens.refreshToken,
       user.id,
-      req.headers['user-agent'] || 'unknown',
-      req.ip || 'unknown',
+      deviceInfo || 'Unknown Device',
+      ipAddress || 'Unknown IP',
     );
 
-    // Set cookies
-    this.setTokenCookies(res, tokens);
+    // Clean up expired tokens for this user
+    await this.cleanupExpiredTokens(user.id);
 
     return {
       user: {
@@ -98,72 +98,68 @@ export class AuthService {
         email: user.email,
         role: user.role,
       },
-      accessToken: tokens.accessToken,
+      ...tokens,
     };
   }
 
-  async logout(userId: string, refreshToken: string, res: Response) {
-    // Revoke the refresh token
-    await this.db
-      .update(refreshTokens)
-      .set({ isRevoked: true, updatedAt: new Date() })
-      .where(and(eq(refreshTokens.token, refreshToken), eq(refreshTokens.userId, userId)));
-
-    // Clear cookies
-    this.clearTokenCookies(res);
+  async logout(userId: string, refreshToken?: string) {
+    if (refreshToken) {
+      // Revoke the specific refresh token
+      await this.db
+        .update(refreshTokens)
+        .set({ isRevoked: true, updatedAt: new Date() })
+        .where(and(eq(refreshTokens.token, refreshToken), eq(refreshTokens.userId, userId)));
+    } else {
+      // Logout from all devices - revoke all refresh tokens for this user
+      await this.db
+        .update(refreshTokens)
+        .set({ isRevoked: true, updatedAt: new Date() })
+        .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.isRevoked, false)));
+    }
 
     return { message: 'Logged out successfully' };
   }
 
-  async logoutAll(userId: string, res: Response) {
-    // Revoke all refresh tokens for this user
-    await this.db
-      .update(refreshTokens)
-      .set({ isRevoked: true, updatedAt: new Date() })
-      .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.isRevoked, false)));
+  async refreshToken(
+    userId: string,
+    rt: string,
+    deviceInfo?: string,
+    ipAddress?: string,
+  ) {
+    // Find the user
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
 
-    // Clear cookies
-    this.clearTokenCookies(res);
+    if (!user) {
+      throw new ForbiddenException('Invalid refresh token');
+    }
 
-    return { message: 'Logged out from all devices successfully' };
-  }
-
-  async refreshTokens(refreshToken: string, req: Request, res: Response) {
-    // Find the refresh token
-    const tokenRecord = await this.db.query.refreshTokens.findFirst({
+    // Find matching refresh token in database
+    const storedTokens = await this.db.query.refreshTokens.findMany({
       where: and(
-        eq(refreshTokens.token, refreshToken),
+        eq(refreshTokens.userId, userId),
         eq(refreshTokens.isRevoked, false),
       ),
     });
 
-    if (!tokenRecord) {
+    let validToken = null;
+    for (const storedToken of storedTokens) {
+      if (storedToken.token === rt && new Date() < storedToken.expiresAt) {
+        validToken = storedToken;
+        break;
+      }
+    }
+
+    if (!validToken) {
       throw new UnauthorizedException('Invalid refresh token');
-    }
-
-    // Check if token is expired
-    if (new Date() > tokenRecord.expiresAt) {
-      await this.db
-        .update(refreshTokens)
-        .set({ isRevoked: true, updatedAt: new Date() })
-        .where(eq(refreshTokens.id, tokenRecord.id));
-      throw new UnauthorizedException('Refresh token has expired');
-    }
-
-    // Find the user
-    const user = await this.db.query.users.findFirst({
-      where: eq(users.id, tokenRecord.userId),
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
     }
 
     // Revoke old refresh token (token rotation)
     await this.db
       .update(refreshTokens)
       .set({ isRevoked: true, updatedAt: new Date() })
-      .where(eq(refreshTokens.id, tokenRecord.id));
+      .where(eq(refreshTokens.id, validToken.id));
 
     // Generate new tokens
     const tokens = await this.generateTokens(user);
@@ -172,61 +168,37 @@ export class AuthService {
     await this.storeRefreshToken(
       tokens.refreshToken,
       user.id,
-      req.headers['user-agent'] || 'unknown',
-      req.ip || 'unknown',
+      deviceInfo || 'Unknown Device',
+      ipAddress || 'Unknown IP',
     );
 
-    // Set new cookies
-    this.setTokenCookies(res, tokens);
+    return tokens;
+  }
+
+  async getMe(userId: string) {
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     return {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-      accessToken: tokens.accessToken,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
     };
   }
 
-  async getActiveSessions(userId: string) {
-    const tokens = await this.db.query.refreshTokens.findMany({
-      where: and(
-        eq(refreshTokens.userId, userId),
-        eq(refreshTokens.isRevoked, false),
-      ),
-      orderBy: (refreshTokens, { desc }) => [desc(refreshTokens.createdAt)],
-    });
+  // Helper Methods
 
-    return tokens
-      .filter((token) => new Date() < token.expiresAt)
-      .map((token) => ({
-        id: token.id,
-        userAgent: token.userAgent,
-        ipAddress: token.ipAddress,
-        createdAt: token.createdAt,
-        expiresAt: token.expiresAt,
-      }));
+  async hashData(data: string): Promise<string> {
+    return bcrypt.hash(data, SALT_ROUNDS);
   }
 
-  async revokeSession(userId: string, sessionId: string) {
-    const result = await this.db
-      .update(refreshTokens)
-      .set({ isRevoked: true, updatedAt: new Date() })
-      .where(and(eq(refreshTokens.id, sessionId), eq(refreshTokens.userId, userId)))
-      .returning();
-
-    if (result.length === 0) {
-      throw new UnauthorizedException('Session not found');
-    }
-
-    return { message: 'Session revoked successfully' };
-  }
-
-  // Private helper methods
-
-  private async generateTokens(user: User) {
+  async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -284,16 +256,16 @@ export class AuthService {
     return new Date(Date.now() + value * multipliers[unit]);
   }
 
-  private setTokenCookies(
-    res: Response,
-    tokens: { accessToken: string; refreshToken: string },
-  ) {
-    res.cookie('access_token', tokens.accessToken, COOKIE_CONFIG.ACCESS_TOKEN);
-    res.cookie('refresh_token', tokens.refreshToken, COOKIE_CONFIG.REFRESH_TOKEN);
-  }
+  private async cleanupExpiredTokens(userId: string) {
+    // Remove expired/revoked refresh tokens for this user
+    const expiredTokens = await this.db.query.refreshTokens.findMany({
+      where: eq(refreshTokens.userId, userId),
+    });
 
-  private clearTokenCookies(res: Response) {
-    res.clearCookie('access_token', COOKIE_CONFIG.ACCESS_TOKEN);
-    res.clearCookie('refresh_token', COOKIE_CONFIG.REFRESH_TOKEN);
+    for (const token of expiredTokens) {
+      if (token.isRevoked || new Date() > token.expiresAt) {
+        await this.db.delete(refreshTokens).where(eq(refreshTokens.id, token.id));
+      }
+    }
   }
 }
