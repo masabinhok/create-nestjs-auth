@@ -14,12 +14,12 @@ const ORM_OPTIONS = {
     description: 'Next-generation ORM with type safety',
     databases: ['postgres', 'mysql', 'sqlite', 'mongodb'],
   },
+  typeorm: {
+    name: 'TypeORM',
+    description: 'Traditional ORM with decorators',
+    databases: ['postgres', 'mysql', 'sqlite'],
+  },
   // Future ORMs can be added here:
-  // typeorm: {
-  //   name: 'TypeORM',
-  //   description: 'Traditional ORM with decorators',
-  //   databases: ['postgres', 'mysql', 'sqlite', 'mongodb'],
-  // },
   // mongoose: {
   //   name: 'Mongoose',
   //   description: 'MongoDB ODM',
@@ -423,6 +423,39 @@ async function handlePostSetup(targetDir, appName, options) {
         return false;
       }
     }
+  } else if (orm === 'typeorm') {
+    const { setupDatabase } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'setupDatabase',
+      message: 'Set up the database now? (run migrations, seed)',
+      default: true
+    }]);
+
+    if (setupDatabase) {
+      console.log(chalk.yellow('\n📦 Setting up database...\n'));
+      
+      const pmPrefix = packageManager === 'npm' ? 'npm run' : packageManager;
+      
+      try {
+        console.log(chalk.gray('   Running TypeORM migrations...'));
+        execSync(`${pmPrefix} typeorm:run`, { cwd: targetDir, stdio: 'inherit' });
+        
+        console.log(chalk.gray('\n   Seeding database with default admin user...'));
+        execSync(`${pmPrefix} db:seed`, { cwd: targetDir, stdio: 'inherit' });
+        
+        console.log(chalk.green('\n   ✓ Database setup complete!\n'));
+        
+        console.log(chalk.cyan('   📝 Default admin credentials:'));
+        console.log(chalk.white('      Email:    admin@example.com'));
+        console.log(chalk.white('      Password: Admin@123\n'));
+      } catch (error) {
+        console.error(chalk.red('\n   ✗ Database setup failed'));
+        console.error(chalk.yellow('   You can run these commands manually:'));
+        console.error(chalk.gray(`     ${pmPrefix} typeorm:run`));
+        console.error(chalk.gray(`     ${pmPrefix} db:seed\n`));
+        return false;
+      }
+    }
   }
 
   // Ask if user wants to start dev server
@@ -460,7 +493,7 @@ program
   .option('--skip-install', 'Skip automatic dependency installation')
   .option('--package-manager <pm>', 'Package manager to use (npm|pnpm|yarn|bun)')
   .option('--skip-git', 'Skip git repository initialization')
-  .option('--orm <orm>', 'ORM to use (prisma)')
+  .option('--orm <orm>', 'ORM to use (prisma|typeorm)')
   .option('--database <db>', 'Database to use (postgres|mysql|sqlite|mongodb)')
   .option('--yes', 'Skip all prompts and use defaults')
   .action(async (appName, options) => {
@@ -594,6 +627,10 @@ program
           console.log(chalk.gray('   npm run prisma:generate'));
           console.log(chalk.gray('   npm run prisma:migrate'));
           console.log(chalk.gray('   npm run prisma:seed'));
+        } else if (projectOptions.orm === 'typeorm') {
+          console.log(chalk.cyan('   # Then setup the database:'));
+          console.log(chalk.gray('   npm run typeorm:run'));
+          console.log(chalk.gray('   npm run db:seed'));
         }
         
         console.log(chalk.cyan('\n   # Start development server:'));
