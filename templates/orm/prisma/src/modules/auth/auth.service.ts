@@ -277,6 +277,7 @@ export class AuthService {
       where: { userId },
       orderBy: { createdAt: 'desc' },
       skip: 5,
+      take: 100,
     });
 
     if (tokens.length > 0) {
