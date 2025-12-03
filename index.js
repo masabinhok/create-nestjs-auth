@@ -330,16 +330,48 @@ async function generateProject(targetDir, options) {
     }
 
     // Step 3: Copy database-specific files and merge package.json
+    // Only copy files relevant to the selected ORM
     if (await fs.pathExists(dbDir)) {
       console.log(chalk.gray(`   Configuring for ${DATABASE_OPTIONS[database]?.name || database}...`));
+      
+      // Define ORM-specific files to include/exclude
+      const drizzleFiles = ['drizzle.config.ts', 'drizzle'];
+      const prismaFiles = ['prisma'];
+      const typeormFiles = ['ormconfig.ts', 'ormconfig.json'];
+      
       await fs.copy(dbDir, targetDir, {
         overwrite: true,
         filter: (src) => {
           const basename = path.basename(src);
+          const relativePath = path.relative(dbDir, src);
+          
           // Always include .gitignore
           if (basename === '.gitignore') return true;
+          
           // Exclude node_modules and package.json (we'll merge package.json separately)
-          return !src.includes('node_modules') && basename !== 'package.json';
+          if (src.includes('node_modules') || basename === 'package.json') return false;
+          
+          // Filter ORM-specific files based on selected ORM
+          if (orm === 'prisma') {
+            // For Prisma: exclude drizzle files, include prisma files
+            if (drizzleFiles.some(f => relativePath.startsWith(f) || basename === f)) return false;
+            if (relativePath.includes('src' + path.sep + 'database')) return false; // Drizzle's database folder
+          } else if (orm === 'drizzle') {
+            // For Drizzle: exclude prisma folder
+            if (prismaFiles.some(f => relativePath.startsWith(f) || basename === f)) return false;
+          } else if (orm === 'typeorm') {
+            // For TypeORM: exclude both drizzle and prisma files
+            if (drizzleFiles.some(f => relativePath.startsWith(f) || basename === f)) return false;
+            if (prismaFiles.some(f => relativePath.startsWith(f) || basename === f)) return false;
+            if (relativePath.includes('src' + path.sep + 'database')) return false;
+          } else if (orm === 'mongoose') {
+            // For Mongoose: exclude all SQL ORM files
+            if (drizzleFiles.some(f => relativePath.startsWith(f) || basename === f)) return false;
+            if (prismaFiles.some(f => relativePath.startsWith(f) || basename === f)) return false;
+            if (relativePath.includes('src' + path.sep + 'database')) return false;
+          }
+          
+          return true;
         },
       });
       
