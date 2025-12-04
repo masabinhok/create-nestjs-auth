@@ -12,7 +12,7 @@ import { eq, and } from 'drizzle-orm';
 import * as bcrypt from 'bcrypt';
 import { DRIZZLE } from '../../database/database.module';
 import { DrizzleDB } from '../../database/drizzle';
-import { users, refreshTokens, User } from '../../database/schema';
+import { users, refreshTokens, User, RefreshToken } from '../../database/schema';
 import { SignupDto } from './dtos/signup.dto';
 import { LoginDto } from './dtos/login.dto';
 
@@ -161,7 +161,7 @@ export class AuthService {
       ),
     });
 
-    let validToken = null;
+    let validToken: RefreshToken | null = null;
     for (const storedToken of storedTokens) {
       if (new Date() < storedToken.expiresAt) {
         const matches = await bcrypt.compare(rt, storedToken.token);
@@ -228,10 +228,12 @@ export class AuthService {
     };
 
     const [accessToken, refreshToken] = await Promise.all([
+      // @ts-expect-error - JWT library type definition issue with expiresIn accepting string
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
         expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRY') || '15m',
       }),
+      // @ts-expect-error - JWT library type definition issue with expiresIn accepting string
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRY') || '7d',

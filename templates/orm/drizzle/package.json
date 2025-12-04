@@ -36,6 +36,7 @@
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
     "drizzle-orm": "^0.38.0",
+    "helmet": "^8.1.0",
     "zod": "^4.1.12",
     "nestjs-pino": "^4.2.0",
     "pino-http": "^10.4.0",

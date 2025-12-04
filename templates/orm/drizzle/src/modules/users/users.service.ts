@@ -39,30 +39,8 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Check if email is being changed and if it's already taken
-    if (updateProfileDto.email && updateProfileDto.email !== user.email) {
-      const existingUser = await this.db.query.users.findFirst({
-        where: and(
-          eq(users.email, updateProfileDto.email.toLowerCase()),
-          ne(users.id, userId),
-        ),
-      });
-
-      if (existingUser) {
-        throw new ConflictException('Email already in use');
-      }
-    }
-
-    // Hash new password if provided
-    let passwordHash: string | undefined;
-    if (updateProfileDto.password) {
-      passwordHash = await bcrypt.hash(updateProfileDto.password, SALT_ROUNDS);
-    }
-
     const updateData: Record<string, any> = { updatedAt: new Date() };
     if (updateProfileDto.fullName) updateData.fullName = updateProfileDto.fullName;
-    if (updateProfileDto.email) updateData.email = updateProfileDto.email.toLowerCase();
-    if (passwordHash) updateData.passwordHash = passwordHash;
 
     const [updatedUser] = await this.db
       .update(users)
@@ -129,32 +107,10 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Check if email is being changed and if it's already taken
-    if (updateUserDto.email && updateUserDto.email !== user.email) {
-      const existingUser = await this.db.query.users.findFirst({
-        where: and(
-          eq(users.email, updateUserDto.email.toLowerCase()),
-          ne(users.id, userId),
-        ),
-      });
-
-      if (existingUser) {
-        throw new ConflictException('Email already in use');
-      }
-    }
-
-    // Hash new password if provided
-    let passwordHash: string | undefined;
-    if (updateUserDto.password) {
-      passwordHash = await bcrypt.hash(updateUserDto.password, SALT_ROUNDS);
-    }
-
     const updateData: Record<string, any> = { updatedAt: new Date() };
     if (updateUserDto.fullName) updateData.fullName = updateUserDto.fullName;
-    if (updateUserDto.email) updateData.email = updateUserDto.email.toLowerCase();
     if (updateUserDto.role) updateData.role = updateUserDto.role as UserRole;
     if (updateUserDto.isActive !== undefined) updateData.isActive = updateUserDto.isActive;
-    if (passwordHash) updateData.passwordHash = passwordHash;
 
     const [updatedUser] = await this.db
       .update(users)
