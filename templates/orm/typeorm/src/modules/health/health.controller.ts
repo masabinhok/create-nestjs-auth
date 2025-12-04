@@ -21,31 +21,4 @@ export class HealthController {
       () => this.db.pingCheck('database'),
     ]);
   }
-
-  @Get('ready')
-  @Public()
-  @HealthCheck()
-  checkReadiness() {
-    return this.health.check([
-      () => this.db.pingCheck('database'),
-      () => ({
-        application: {
-          status: 'up',
-          uptime: process.uptime(),
-          timestamp: new Date().toISOString(),
-        },
-      }),
-    ]);
-  }
-
-  @Get('live')
-  @Public()
-  checkLiveness() {
-    return {
-      status: 'ok',
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString(),
-      pid: process.pid,
-    };
-  }
 }
