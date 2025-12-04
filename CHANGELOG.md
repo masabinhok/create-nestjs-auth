@@ -8,40 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 2025-12-04
 
 ### Added
-- ✨ **Multi-ORM Support** - Choose between Prisma, Drizzle, TypeORM, or Mongoose
-- 🗄️ **Multi-Database Support** - PostgreSQL, MySQL, SQLite, or MongoDB
-- 🏗️ **Modular Template Architecture** - Base + ORM + Database composition
-- 🧪 **Comprehensive Test Scripts** - Test each ORM individually
-- 📦 **Modular CLI Source Code** - Split into organized modules in `src/`
-- 🔄 **GitHub Actions CI/CD** - Automated testing and npm publishing
-- 📝 **Open Source Ready** - CODE_OF_CONDUCT.md, SECURITY.md, PR templates
+- Multi-ORM support - Choose between Prisma, Drizzle, TypeORM, or Mongoose
+- Multi-database support - PostgreSQL, MySQL, SQLite, or MongoDB
+- Modular template architecture - Base + ORM + Database composition
+- Comprehensive test scripts - Test each ORM individually
+- Modular CLI source code - Split into organized modules in `src/`
+- GitHub Actions CI/CD - Automated testing and npm publishing
+- Open source essentials - CODE_OF_CONDUCT.md, SECURITY.md, PR templates
+- New CLI flags: `--orm` and `--database` for non-interactive selection
 
 ### Changed
-- 🔧 **CLI Architecture** - Modularized from single file to `src/` directory
-- 📦 **Package Structure** - Added `bin/` and `src/` directories
-- 🎯 **Keywords** - Updated for better npm discoverability
-- 📚 **Documentation** - Consolidated redundant markdown files
+- CLI architecture modularized from single file to `src/` directory
+- Package structure reorganized with `bin/` and `src/` directories
+- Keywords updated for better npm discoverability
+- Documentation consolidated (removed redundant markdown files)
 
 ### Removed
-- 🗑️ `index.old.js` - Obsolete backup file
-- 🗑️ `CHANGES.md` - Merged into CHANGELOG.md
-- 🗑️ `INTERACTIVE_SETUP.md` - Merged into CONTRIBUTING.md
-- 🗑️ `QUICK_REFERENCE.md` - Content in README.md
-- 🗑️ Unnecessary devDependencies (TypeScript not needed for JS CLI)
+- `index.old.js` - Obsolete backup file
+- `CHANGES.md` - Merged into CHANGELOG.md
+- `INTERACTIVE_SETUP.md` - Merged into CONTRIBUTING.md
+- `QUICK_REFERENCE.md` - Content moved to README.md
+- Unnecessary devDependencies (TypeScript not needed for JS CLI)
 
 ## [1.1.0] - 2025-11-17
 
 ### Added
-- ✨ **Interactive Mode** - Run without arguments for guided setup
-- 🎯 **Project Name Prompt** - Interactive project name input with validation
-- 📦 **Package Manager Selection** - Choose from npm, pnpm, yarn, or bun with auto-detection
-- 🔧 **Setup Preferences** - Interactive prompts for git and dependency installation
-- 🔑 **Automatic JWT Secret Generation** - No need for manual `openssl` commands
-- 🗄️ **Database URL Prompt** - Guided PostgreSQL connection string input
-- 📊 **Interactive Database Setup** - Automatic Prisma generate, migrate, and seed
-- 🚀 **Dev Server Auto-start** - Option to start development server immediately
-- 🎨 **Enhanced User Experience** - Beautiful prompts with defaults and validation
-- 📝 **Post-Setup Workflow** - Complete end-to-end interactive configuration
+- Interactive mode - Run without arguments for guided setup
+- Project name prompt with validation
+- Package manager selection with auto-detection (npm, pnpm, yarn, bun)
+- Setup preferences - Interactive prompts for git and dependency installation
+- Automatic JWT secret generation - No manual `openssl` commands required
+- Database URL prompt - Guided PostgreSQL connection string input
+- Interactive database setup - Automatic Prisma generate, migrate, and seed
+- Dev server auto-start option
+- Post-setup workflow - Complete end-to-end interactive configuration
 - `--yes` flag - Skip all prompts for CI/CD and automation
 
 ### Changed
@@ -53,27 +53,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganized post-creation instructions for clarity
 
 ### Dependencies
-- Added `inquirer@^8.2.7` for interactive prompts
+- Added `inquirer@^8.2.6` for interactive prompts
 
-### Documentation
-- Added INTERACTIVE_SETUP.md - Comprehensive interactive mode guide
-- Updated README.md with interactive mode section
-- Updated QUICK_REFERENCE.md with new commands
-- Added example interactive session outputs
+## [1.0.0] - 2025-11-16
 
-## [Unreleased]
+### Added
+- Initial release of create-nestjs-auth CLI
+- Comprehensive error handling and validation
+- App name validation (npm naming conventions)
+- Node.js version checking (requires >= 20.x)
+- Package manager auto-detection (npm, pnpm, yarn, bun)
+- CLI options: `--skip-install`, `--package-manager`, `--skip-git`
+- Automatic .env file creation from .env.example
+- Git repository initialization with initial commit
+- Proper package.json metadata for npm
 
-### Planned
-- Support for custom templates
-- Progress indicators for long-running operations
-- Template customization wizard
-- Automatic Docker setup option
-- CI/CD configuration templates
+### Security
+- Secrets generation using cryptographically secure methods
+- Validation to prevent directory traversal attacks
+- Proper handling of environment variables
 
 ---
 
 ## Version History
 
-- **1.1.0** - Added interactive mode and post-setup automation (2025-11-17)
-- **1.0.0** - Major refactor with comprehensive improvements (2025-11-16)
-- **0.1.0** - Initial basic version (pre-refactor)
+| Version | Date | Description |
+|---------|------|-------------|
+| 2.0.0 | 2025-12-04 | Multi-ORM and multi-database support |
+| 1.1.0 | 2025-11-17 | Interactive mode and post-setup automation |
+| 1.0.0 | 2025-11-16 | Initial release with Prisma + PostgreSQL |

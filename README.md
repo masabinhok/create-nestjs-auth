@@ -19,11 +19,11 @@ Get a battle-tested, production-ready NestJS auth system in **under 3 minutes**.
 npx create-nestjs-auth@latest
 ```
 
-[Quick Start](#-quick-start) • [ORM & Database Options](#orm--database-options) • [Features](#-what-you-get) • [Docs](#-links--resources)
+[Quick Start](#quick-start) | [ORM & Database Options](#orm--database-options) | [Features](#what-you-get) | [Docs](#links--resources)
 
 ---
 
-**⚡ v2.0.0** • **4 ORMs** (Prisma, Drizzle, TypeORM, Mongoose) • **4 Databases** (PostgreSQL, MySQL, SQLite, MongoDB)
+**v2.0.0** | **4 ORMs** (Prisma, Drizzle, TypeORM, Mongoose) | **4 Databases** (PostgreSQL, MySQL, SQLite, MongoDB)
 
 </div>
 
@@ -32,16 +32,16 @@ npx create-nestjs-auth@latest
 ## Why This Exists
 
 Building secure JWT authentication isn't trivial. You need:
--  Access tokens + refresh token rotation
--  HttpOnly cookies (not localStorage)
--  Multi-device session management
--  Role-based access control (RBAC)
--  Rate limiting & brute-force protection
--  PII-safe logging
--  Proper password hashing (bcrypt 12 rounds)
--  Flexible ORM & database choices
+- Access tokens + refresh token rotation
+- HttpOnly cookies (not localStorage)
+- Multi-device session management
+- Role-based access control (RBAC)
+- Rate limiting & brute-force protection
+- PII-safe logging
+- Proper password hashing (bcrypt 12 rounds)
+- Flexible ORM & database choices
 
-**This CLI gives you all of that.** Production-ready, security-hardened, tested patternsinstantly.
+**This CLI gives you all of that.** Production-ready, security-hardened, tested patterns - instantly.
 
 <div align="center">
 
@@ -91,10 +91,10 @@ npx create-nestjs-auth@latest
 **That's it.** No configuration files. No secret management headaches. No database setup confusion.
 
 <details>
-<summary><b> See it in action (GIF/Video coming soon)</b></summary>
+<summary><b>See it in action (GIF/Video coming soon)</b></summary>
 
 ```
-️ create-nestjs-auth
+create-nestjs-auth
 
 ? What is your project name? my-awesome-api
 ? Which ORM would you like to use? Prisma
@@ -312,7 +312,7 @@ my-app/
 
 ## Usage Examples
 
-### 1️ Interactive Mode (Recommended)
+### 1. Interactive Mode (Recommended)
 
 **Zero configuration. Just answer questions:**
 
@@ -332,7 +332,7 @@ The CLI guides you through:
 
 **Perfect for:** First-time users, learning, rapid prototyping
 
-### 2️ Quick Mode
+### 2. Quick Mode
 
 **Fastest way to get started:**
 
@@ -345,7 +345,7 @@ npm run prisma:generate && npm run prisma:migrate && npm start:dev
 
 **Perfect for:** Experienced users who know the drill
 
-### 3️ Automation Mode
+### 3. Automation Mode
 
 **For CI/CD and scripts:**
 
@@ -488,7 +488,7 @@ export class PostsController {
 
 ---
 
-## ️ CLI Options Reference
+## CLI Options Reference
 
 | Option | Description | Example |
 |--------|-------------|---------|
@@ -602,7 +602,7 @@ Choose the combination that fits your project:
 
 ---
 
-## ️ Architecture Overview
+## Architecture Overview
 
 ### What's Inside
 
@@ -1175,7 +1175,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 - [JWT.io](https://jwt.io) - Learn about JWT tokens
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/) - Web security basics
 
-### ️ Related Projects
+### Related Projects
 - [create-next-app](https://nextjs.org/docs/api-reference/create-next-app) - Create Next.js apps
 - [create-t3-app](https://create.t3.gg) - Full-stack TypeScript
 - [nest-cli](https://docs.nestjs.com/cli/overview) - Official NestJS CLI
@@ -1350,7 +1350,7 @@ Found a bug? Have a feature idea? [Open an issue](https://github.com/masabinhok/
 
 ---
 
-<h3>Built with ️ by <a href="https://sabinshrestha69.com.np">Sabin Shrestha</a></h3>
+<h3>Built by <a href="https://sabinshrestha69.com.np">Sabin Shrestha</a></h3>
 
 <p>
   <a href="https://github.com/masabinhok">
@@ -1378,12 +1378,12 @@ Found a bug? Have a feature idea? [Open an issue](https://github.com/masabinhok/
 
 <sub>
  Generated projects follow <strong>NestJS best practices</strong> and <strong>OWASP security guidelines</strong><br>
- <strong>v2.0.0</strong>  Multi-ORM & Multi-Database Support  December 2025  MIT License
+ <strong>v2.0.0</strong> | Multi-ORM & Multi-Database Support | December 2025 | MIT License
 </sub>
 
 <br><br>
 
-**Now go build something amazing! **
+**Now go build something amazing!**
 
 </div>
 
