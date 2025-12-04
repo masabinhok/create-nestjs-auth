@@ -137,7 +137,7 @@ export class AuthService {
       expiresAt: { $gt: new Date() },
     });
 
-    let validToken = null;
+    let validToken: RefreshTokenDocument | null = null;
     for (const storedToken of storedTokens) {
       const matches = await bcrypt.compare(rt, storedToken.token);
       if (matches) {
@@ -197,14 +197,17 @@ export class AuthService {
       role: user.role,
     };
 
+    const accessExpiry = (this.configService.get<string>('JWT_ACCESS_EXPIRY') || '15m') as any;
+    const refreshExpiry = (this.configService.get<string>('JWT_REFRESH_EXPIRY') || '7d') as any;
+
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRY') || '15m',
+        expiresIn: accessExpiry,
       }),
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRY') || '7d',
+        expiresIn: refreshExpiry,
       }),
     ]);
 

@@ -32,6 +32,9 @@ async function seed() {
     console.log('✓ Connected to MongoDB');
 
     const db = connection.db;
+    if (!db) {
+      throw new Error('Failed to get database instance from connection');
+    }
     const usersCollection = db.collection('users');
 
     // Check if admin already exists

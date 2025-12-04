@@ -10,3 +10,5 @@ test-output/
 test/
 sabin/
 .env
+mongooseDemo/
+prismaPostgresDemo/
