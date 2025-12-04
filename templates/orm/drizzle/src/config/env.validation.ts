@@ -1,0 +1,55 @@
+import { z } from 'zod';
+
+export const envSchema = z.object({
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
+  PORT: z.coerce.number().default(8080),
+
+  // Database
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+
+  // JWT Secrets
+  JWT_ACCESS_SECRET: z
+    .string()
+    .min(32, 'JWT_ACCESS_SECRET must be at least 32 characters'),
+  JWT_REFRESH_SECRET: z
+    .string()
+    .min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
+  JWT_ACCESS_EXPIRY: z
+    .string()
+    .regex(/^\d+[smhd]$/, 'JWT_ACCESS_EXPIRY must be in format: 60m, 1h, etc.')
+    .default('15m'),
+  JWT_REFRESH_EXPIRY: z
+    .string()
+    .regex(/^\d+[smhd]$/, 'JWT_REFRESH_EXPIRY must be in format: 7d, 30d, etc.')
+    .default('7d'),
+
+  // CORS
+  CORS_ORIGIN: z
+    .string()
+    .refine((val) => {
+      const origins = val.split(',').map((o) => o.trim());
+      const urlRegex = /^https?:\/\/.+/;
+      return origins.every((origin) => urlRegex.test(origin) || origin === '*');
+    }, 'CORS_ORIGIN must be valid URL(s) or "*"')
+    .default('http://localhost:3000'),
+
+  // Logging
+  LOG_LEVEL: z
+    .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
+    .default('info'),
+});
+
+export type Env = z.infer<typeof envSchema>;
+
+export function validate(config: Record<string, unknown>) {
+  const result = envSchema.safeParse(config);
+  if (!result.success) {
+    const errors = result.error.issues
+      .map((e) => `${e.path.join('.')}: ${e.message}`)
+      .join('\n');
+    throw new Error(`Environment validation failed:\n${errors}`);
+  }
+  return result.data;
+}

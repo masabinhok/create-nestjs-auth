@@ -2,20 +2,35 @@
 
 Thank you for your interest in contributing! This document provides guidelines for contributing to the create-nestjs-auth CLI tool.
 
-## Development Setup
+## 📋 Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Project Structure](#project-structure)
+- [Making Changes](#making-changes)
+- [Testing](#testing)
+- [Pull Request Process](#pull-request-process)
+- [Coding Guidelines](#coding-guidelines)
+
+## Code of Conduct
+
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing. We are committed to providing a welcoming and inclusive environment.
+
+## Getting Started
 
 ### Prerequisites
 
 - Node.js >= 20.x
-- npm >= 10.x
+- npm, pnpm, yarn, or bun
 - Git
 
 ### Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/masabinhok/create-nestjs-auth.git
-cd create-nestjs-auth/cli
+# Fork and clone the repository
+git clone https://github.com/YOUR_USERNAME/create-nestjs-auth.git
+cd create-nestjs-auth
 
 # Install dependencies
 npm install
@@ -24,232 +39,216 @@ npm install
 npm link
 
 # Now you can test with
-create-nestjs-auth my-test-app
+create-nestjs-auth my-test-app --skip-install
 ```
 
 ## Project Structure
 
 ```
-cli/
-├── index.js           # Main CLI logic
-├── package.json       # CLI package configuration
-├── README.md          # User-facing documentation
-├── .npmignore         # Files to exclude from npm package
-└── template/          # Template files copied to new projects
-    ├── src/           # NestJS application source
-    ├── prisma/        # Database schema and migrations
-    ├── test/          # E2E tests
-    ├── setup.js       # Interactive setup helper
-    └── ...            # Other template files
+create-nestjs-auth/
+├── index.js              # Entry point (re-exports bin/cli.js)
+├── bin/
+│   └── cli.js            # Main CLI implementation
+├── src/
+│   ├── index.js          # Module exports
+│   ├── constants.js      # Configuration constants
+│   ├── utils.js          # Utility functions
+│   ├── prompts.js        # Interactive prompts
+│   ├── generator.js      # Project generation logic
+│   └── postSetup.js      # Post-setup handlers
+├── templates/
+│   ├── base/             # Shared, ORM-agnostic code
+│   ├── orm/              # ORM-specific implementations
+│   │   ├── prisma/
+│   │   ├── drizzle/
+│   │   ├── typeorm/
+│   │   └── mongoose/
+│   └── database/         # Database-specific configurations
+│       ├── postgres/
+│       ├── mysql/
+│       ├── sqlite/
+│       └── mongodb/
+├── .github/
+│   ├── workflows/        # CI/CD workflows
+│   ├── ISSUE_TEMPLATE/   # Issue templates
+│   └── PULL_REQUEST_TEMPLATE.md
+├── package.json
+├── README.md
+├── CONTRIBUTING.md       # This file
+├── CODE_OF_CONDUCT.md
+├── SECURITY.md
+├── CHANGELOG.md
+└── LICENSE
 ```
 
 ## Making Changes
 
+### Branch Naming
+
+- `feature/your-feature-name` - New features
+- `fix/issue-description` - Bug fixes
+- `docs/what-changed` - Documentation updates
+- `refactor/what-changed` - Code refactoring
+
 ### Code Style
 
 - Use consistent formatting (2 spaces for indentation)
-- Add comments for complex logic
+- Add JSDoc comments for functions
 - Use meaningful variable names
 - Follow existing code patterns
 
-### Testing Your Changes
+### Adding a New ORM
 
-1. **Test basic creation:**
+1. Create a new directory under `templates/orm/your-orm/`
+2. Include:
+   - `package.json` with ORM-specific dependencies
+   - `src/app.module.ts`
+   - `src/modules/auth/` - Auth service & module
+   - `src/modules/users/` - Users service & module
+   - Database connection setup
+
+3. Update `src/constants.js` with the new ORM option
+4. Update `src/postSetup.js` with setup handlers
+5. Add tests and documentation
+
+### Adding a New Database
+
+1. Create a new directory under `templates/database/your-db/`
+2. Include:
+   - `.env.example` with database URL template
+   - Database-specific configurations
+   - `package.json` with driver dependencies
+
+3. Update `src/constants.js` with the new database option
+
+## Testing
+
+### Test Commands
+
 ```bash
+# Quick test (skip install)
 npm test
-# This runs: node index.js test-output --skip-install
+
+# Test specific ORM
+npm run test:prisma
+npm run test:drizzle
+npm run test:typeorm
+npm run test:mongoose
+
+# Full test with installation
+npm run test:full
+
+# Clean up test outputs
+npm run clean
 ```
 
-2. **Test with full installation:**
-```bash
-node index.js test-full-app
-cd test-full-app
-npm run start:dev
-```
+### Manual Testing Checklist
 
-3. **Test all CLI options:**
-```bash
-# Test skip-install
-node index.js test-skip --skip-install
-
-# Test skip-git
-node index.js test-nogit --skip-git
-
-# Test package manager selection
-node index.js test-pnpm --package-manager pnpm
-```
-
-4. **Verify template integrity:**
-```bash
-# Check that all files were copied
-cd test-output
-ls -la
-
-# Verify .env was created
-cat .env
-
-# Check package.json name was updated
-grep '"name"' package.json
-```
-
-### Before Submitting
-
-- [ ] Test CLI on clean environment
-- [ ] Verify all options work (--skip-install, --skip-git, --package-manager)
-- [ ] Check that template files are complete
-- [ ] Update README.md if adding new features
-- [ ] Clean up test directories
-- [ ] Run `npm run prepublishOnly` to verify
-
-## Common Development Tasks
-
-### Updating the Template
-
-When you need to update the template files:
-
-```bash
-# Make changes in template/ directory
-cd template/
-# ... make your changes ...
-
-# Test the changes
-cd ..
-npm test
-```
-
-**Important**: Never commit these files to the template:
-- `node_modules/`
-- `dist/`
-- `.env` (keep `.env.example`)
-- `.git/`
-- `generated/`
-
-### Adding New CLI Options
-
-1. Add option to `program` in `index.js`:
-```javascript
-.option('--my-option', 'Description of my option')
-```
-
-2. Handle the option in the action callback:
-```javascript
-.action(async (appName, options) => {
-  if (options.myOption) {
-    // Your logic here
-  }
-})
-```
-
-3. Update README.md with the new option
-4. Test thoroughly
-
-### Adding Validation
-
-Add validation functions at the top of `index.js`:
-
-```javascript
-function validateMyInput(input) {
-  if (!isValid(input)) {
-    console.error(chalk.red('❌ Invalid input'));
-    process.exit(1);
-  }
-}
-```
+- [ ] Test with all ORM options
+- [ ] Test with all database options
+- [ ] Test with different package managers
+- [ ] Test with `--yes` flag
+- [ ] Test with `--skip-install` flag
+- [ ] Test with `--skip-git` flag
+- [ ] Verify generated project structure
+- [ ] Verify package.json is correctly merged
 
 ## Pull Request Process
 
-1. **Fork and Branch**
-```bash
-git checkout -b feature/your-feature-name
-```
+1. **Create a Branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
 
 2. **Make Changes**
-- Write clear, concise commit messages
-- One feature/fix per pull request
-- Include tests if applicable
+   - Write clear, concise commit messages
+   - One feature/fix per pull request
+   - Include tests if applicable
 
-3. **Test Thoroughly**
-```bash
-# Test the CLI
-npm test
-npm run test:full
+3. **Test Your Changes**
+   ```bash
+   npm test
+   npm run clean
+   ```
 
-# Clean up
-rm -rf test-*
-```
+4. **Update Documentation**
+   - Update README.md if adding features
+   - Update CHANGELOG.md
 
-4. **Submit PR**
-- Clear title describing the change
-- Description of what changed and why
-- Screenshots/examples if applicable
-- Reference any related issues
+5. **Submit PR**
+   - Use the PR template
+   - Link related issues
+   - Provide screenshots if applicable
 
 ### Commit Message Format
 
 ```
-type: brief description
+type(scope): brief description
 
 Longer description if needed
 
 Fixes #123
 ```
 
-Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`
+**Types:**
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation
+- `chore` - Maintenance
+- `refactor` - Code refactoring
+- `test` - Tests
 
-Examples:
-- `feat: add --skip-git option`
-- `fix: handle missing .env.example gracefully`
-- `docs: update README with new options`
+**Examples:**
+- `feat(cli): add --orm option for ORM selection`
+- `fix(generator): handle missing .env.example`
+- `docs(readme): update installation instructions`
 
-## Reporting Issues
+## Coding Guidelines
 
-### Bug Reports
+### JavaScript
 
-Include:
-- Node.js version (`node --version`)
-- npm version (`npm --version`)
-- Operating system
-- Command you ran
-- Expected behavior
-- Actual behavior
-- Error messages (full output)
+```javascript
+// Use JSDoc for functions
+/**
+ * Description of function
+ * @param {string} param1 - Description
+ * @returns {Promise<object>} Description
+ */
+async function myFunction(param1) {
+  // Implementation
+}
 
-### Feature Requests
+// Prefer early returns
+function validate(input) {
+  if (!input) {
+    return false;
+  }
+  // Continue with validation
+  return true;
+}
 
-Include:
-- Clear description of the feature
-- Use case (why is it needed?)
-- Proposed implementation (if you have ideas)
-- Examples from similar tools
-
-## Code of Conduct
-
-- Be respectful and constructive
-- Welcome newcomers
-- Focus on the issue, not the person
-- Assume good intentions
-
-## Questions?
-
-- Open an issue for questions
-- Tag with `question` label
-- Check existing issues first
-
-## Publishing (Maintainers Only)
-
-```bash
-# Verify version in package.json
-# Ensure all tests pass
-npm test
-
-# Publish to npm
-npm login
-npm publish
-
-# Create git tag
-git tag v1.0.0
-git push origin v1.0.0
+// Use descriptive variable names
+const projectDirectory = path.join(process.cwd(), appName);
+// Not: const dir = path.join(process.cwd(), n);
 ```
+
+### Error Handling
+
+```javascript
+try {
+  await fs.copy(source, destination);
+} catch (error) {
+  console.error(chalk.red('❌ Failed to copy files'));
+  console.error(chalk.yellow(`   ${error.message}`));
+  process.exit(1);
+}
+```
+
+## Need Help?
+
+- Open an issue with the `question` label
+- Check existing issues first
+- Join discussions on GitHub
 
 ## License
 

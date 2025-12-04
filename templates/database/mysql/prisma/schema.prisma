@@ -1,0 +1,55 @@
+// This is your Prisma schema file for MySQL
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// Tables
+model User {
+  id        String   @id @default(uuid())
+  fullName  String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(100)
+  passwordHash String @db.Text
+  role      UserRole @default(USER)
+
+  refreshToken String? @db.Text  // Legacy field - kept for backward compatibility
+  isActive  Boolean  @default(true) // for soft delete
+
+  // Relations
+  refreshTokens RefreshToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  deviceInfo String? @db.VarChar(255)
+  ipAddress  String? @db.VarChar(45)
+  
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([token(length: 255)])
+  @@map("refresh_tokens")
+}

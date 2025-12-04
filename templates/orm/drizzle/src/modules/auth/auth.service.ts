@@ -1,0 +1,298 @@
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+  Inject,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { eq, and } from 'drizzle-orm';
+import * as bcrypt from 'bcrypt';
+import { DRIZZLE } from '../../database/database.module';
+import { DrizzleDB } from '../../database/drizzle';
+import { users, refreshTokens, User, RefreshToken } from '../../database/schema';
+import { SignupDto } from './dtos/signup.dto';
+import { LoginDto } from './dtos/login.dto';
+
+const SALT_ROUNDS = 12;
+
+@Injectable()
+export class AuthService {
+  constructor(
+    @Inject(DRIZZLE) private db: DrizzleDB,
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
+
+  async signup(signupDto: SignupDto) {
+    const { fullName, email, password } = signupDto;
+
+    // Check if user already exists
+    const existingUser = await this.db.query.users.findFirst({
+      where: eq(users.email, email.toLowerCase()),
+    });
+
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
+    // Hash password and create user
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    
+    const [user] = await this.db
+      .insert(users)
+      .values({
+        fullName,
+        email: email.toLowerCase(),
+        passwordHash,
+        role: 'USER',
+        isActive: true,
+      })
+      .returning();
+
+    return {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+    };
+  }
+
+  async login(loginDto: LoginDto, deviceInfo?: string, ipAddress?: string) {
+    const { email, password } = loginDto;
+
+    // Find user
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.email, email.toLowerCase()),
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is deactivated');
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Generate tokens
+    const tokens = await this.generateTokens(user);
+
+    // Store refresh token in database
+    await this.storeRefreshToken(
+      tokens.refreshToken,
+      user.id,
+      deviceInfo || 'Unknown Device',
+      ipAddress || 'Unknown IP',
+    );
+
+    // Clean up expired tokens for this user
+    await this.cleanupExpiredTokens(user.id);
+
+    return {
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+      },
+      ...tokens,
+    };
+  }
+
+  async logout(userId: string, refreshToken?: string) {
+    if (refreshToken) {
+      // Find and revoke the specific refresh token by comparing hashes
+      const storedTokens = await this.db.query.refreshTokens.findMany({
+        where: eq(refreshTokens.userId, userId),
+      });
+
+      for (const storedToken of storedTokens) {
+        const matches = await bcrypt.compare(refreshToken, storedToken.token);
+        if (matches) {
+          await this.db
+            .update(refreshTokens)
+            .set({ isRevoked: true, updatedAt: new Date() })
+            .where(eq(refreshTokens.id, storedToken.id));
+          break;
+        }
+      }
+    } else {
+      // Logout from all devices - revoke all refresh tokens for this user
+      await this.db
+        .update(refreshTokens)
+        .set({ isRevoked: true, updatedAt: new Date() })
+        .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.isRevoked, false)));
+    }
+
+    return { message: 'Logged out successfully' };
+  }
+
+  async refreshToken(
+    userId: string,
+    rt: string,
+    deviceInfo?: string,
+    ipAddress?: string,
+  ) {
+    // Find the user
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    if (!user) {
+      throw new ForbiddenException('Invalid refresh token');
+    }
+
+    // Find matching refresh token in database by comparing hashes
+    const storedTokens = await this.db.query.refreshTokens.findMany({
+      where: and(
+        eq(refreshTokens.userId, userId),
+        eq(refreshTokens.isRevoked, false),
+      ),
+    });
+
+    let validToken: RefreshToken | null = null;
+    for (const storedToken of storedTokens) {
+      if (new Date() < storedToken.expiresAt) {
+        const matches = await bcrypt.compare(rt, storedToken.token);
+        if (matches) {
+          validToken = storedToken;
+          break;
+        }
+      }
+    }
+
+    if (!validToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    // Revoke old refresh token (token rotation)
+    await this.db
+      .update(refreshTokens)
+      .set({ isRevoked: true, updatedAt: new Date() })
+      .where(eq(refreshTokens.id, validToken.id));
+
+    // Generate new tokens
+    const tokens = await this.generateTokens(user);
+
+    // Store new refresh token
+    await this.storeRefreshToken(
+      tokens.refreshToken,
+      user.id,
+      deviceInfo || 'Unknown Device',
+      ipAddress || 'Unknown IP',
+    );
+
+    return tokens;
+  }
+
+  async getMe(userId: string) {
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+    };
+  }
+
+  // Helper Methods
+
+  async hashData(data: string): Promise<string> {
+    return bcrypt.hash(data, SALT_ROUNDS);
+  }
+
+  async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const [accessToken, refreshToken] = await Promise.all([
+      // @ts-expect-error - JWT library type definition issue with expiresIn accepting string
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+        expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRY') || '15m',
+      }),
+      // @ts-expect-error - JWT library type definition issue with expiresIn accepting string
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRY') || '7d',
+      }),
+    ]);
+
+    return { accessToken, refreshToken };
+  }
+
+  private async storeRefreshToken(
+    token: string,
+    userId: string,
+    userAgent: string,
+    ipAddress: string,
+  ) {
+    const expiresIn = this.configService.get<string>('JWT_REFRESH_EXPIRY') || '7d';
+    const expiresAt = this.calculateExpiry(expiresIn);
+
+    // Hash the refresh token before storing
+    const hashedToken = await this.hashData(token);
+
+    await this.db.insert(refreshTokens).values({
+      token: hashedToken,
+      userId,
+      userAgent,
+      ipAddress,
+      expiresAt,
+    });
+  }
+
+  private calculateExpiry(expiresIn: string): Date {
+    const match = expiresIn.match(/^(\d+)([smhd])$/);
+    if (!match) {
+      return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Default 7 days
+    }
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2];
+
+    const multipliers: Record<string, number> = {
+      s: 1000,
+      m: 60 * 1000,
+      h: 60 * 60 * 1000,
+      d: 24 * 60 * 60 * 1000,
+    };
+
+    return new Date(Date.now() + value * multipliers[unit]);
+  }
+
+  private async cleanupExpiredTokens(userId: string) {
+    // Remove expired/revoked refresh tokens for this user
+    const expiredTokens = await this.db.query.refreshTokens.findMany({
+      where: eq(refreshTokens.userId, userId),
+    });
+
+    for (const token of expiredTokens) {
+      if (token.isRevoked || new Date() > token.expiresAt) {
+        await this.db.delete(refreshTokens).where(eq(refreshTokens.id, token.id));
+      }
+    }
+  }
+}

@@ -19,11 +19,11 @@ Get a battle-tested, production-ready NestJS auth system in **under 3 minutes**.
 npx create-nestjs-auth@latest
 ```
 
-[Quick Start](#-quick-start)  [Features](#-what-you-get)  [Demo](#-see-it-in-action)  [Docs](#-links--resources)
+[Quick Start](#quick-start) | [ORM & Database Options](#orm--database-options) | [Features](#what-you-get) | [Docs](#links--resources)
 
 ---
 
-**️ Save 40 hours**  ** Production-ready security**  ** Zero configuration**  ** Battle-tested**
+**v2.0.0** | **4 ORMs** (Prisma, Drizzle, TypeORM, Mongoose) | **4 Databases** (PostgreSQL, MySQL, SQLite, MongoDB)
 
 </div>
 
@@ -32,15 +32,16 @@ npx create-nestjs-auth@latest
 ## Why This Exists
 
 Building secure JWT authentication isn't trivial. You need:
--  Access tokens + refresh token rotation
--  HttpOnly cookies (not localStorage)
--  Multi-device session management
--  Role-based access control (RBAC)
--  Rate limiting & brute-force protection
--  PII-safe logging
--  Proper password hashing (bcrypt 12 rounds)
+- Access tokens + refresh token rotation
+- HttpOnly cookies (not localStorage)
+- Multi-device session management
+- Role-based access control (RBAC)
+- Rate limiting & brute-force protection
+- PII-safe logging
+- Proper password hashing (bcrypt 12 rounds)
+- Flexible ORM & database choices
 
-**This CLI gives you all of that.** Production-ready, security-hardened, tested patternsinstantly.
+**This CLI gives you all of that.** Production-ready, security-hardened, tested patterns - instantly.
 
 <div align="center">
 
@@ -75,10 +76,11 @@ Building secure JWT authentication isn't trivial. You need:
 # Run the CLI
 npx create-nestjs-auth@latest
 
-# Answer 7 quick questions
+# Answer quick questions
 #  Project name
+#  ORM (Prisma, Drizzle, TypeORM, or Mongoose)
+#  Database (PostgreSQL, MySQL, SQLite, or MongoDB)
 #  Package manager
-#  Database URL
 #  Install dependencies
 #  Setup database
 #  Initialize git
@@ -89,12 +91,14 @@ npx create-nestjs-auth@latest
 **That's it.** No configuration files. No secret management headaches. No database setup confusion.
 
 <details>
-<summary><b> See it in action (GIF/Video coming soon)</b></summary>
+<summary><b>See it in action (GIF/Video coming soon)</b></summary>
 
 ```
-️ create-nestjs-auth
+create-nestjs-auth
 
 ? What is your project name? my-awesome-api
+? Which ORM would you like to use? Prisma
+? Which database would you like to use? PostgreSQL
 ? Which package manager? pnpm (detected)
 ? Install dependencies? Yes
 ? Initialize git repository? Yes
@@ -159,13 +163,13 @@ npx create-nestjs-auth@latest
 </td>
 <td width="50%">
 
-### Batteries Included
+### Flexible Database Support
 
-- **PostgreSQL + Prisma** - Modern ORM
-- **Database Migrations** - Version control for DB
-- **Default Admin User** - Seeded automatically
-- **API Documentation** - Complete examples
-- **Docker Support** - Coming soon
+- **4 ORMs** - Prisma, Drizzle, TypeORM, Mongoose
+- **4 Databases** - PostgreSQL, MySQL, SQLite, MongoDB
+- **Type-Safe** - Full TypeScript support across all ORMs
+- **Migrations** - Version control for your database
+- **Seeding** - Default admin user included
 
 </td>
 </tr>
@@ -186,6 +190,8 @@ npx create-nestjs-auth@latest my-api
 
 # 2. Answer prompts (20 seconds)
 #  Project name: my-api
+#  ORM: Prisma (or Drizzle, TypeORM, Mongoose)
+#  Database: PostgreSQL (or MySQL, SQLite, MongoDB)
 #  Package manager: pnpm
 #  Install dependencies: Yes
 #  Database URL: postgresql://localhost:5432/mydb
@@ -285,22 +291,28 @@ graph LR
 
 ```
 my-app/
-  src/modules/auth/      # JWT + Refresh token logic
-  src/modules/users/     # User CRUD + profile
-  src/modules/health/    # Health check endpoints
- ️  src/common/guards/     # JWT & RBAC guards
-  src/common/decorators/ # @Roles(), @Public(), @GetUser()
- ️  prisma/               # Schema + migrations + seed
-  test/                  # E2E test suite
-  .env                   # Auto-configured
-  package.json           # All dependencies ready
+├── src/
+│   ├── modules/
+│   │   ├── auth/          # JWT + Refresh token logic
+│   │   ├── users/         # User CRUD + profile
+│   │   └── health/        # Health check endpoints
+│   ├── common/
+│   │   ├── guards/        # JWT & RBAC guards
+│   │   ├── decorators/    # @Roles(), @Public(), @GetUser()
+│   │   └── filters/       # Exception handling
+│   └── config/            # Environment & logging config
+├── prisma/                # (Prisma) Schema + migrations + seed
+├── drizzle/               # (Drizzle) Schema + migrations
+├── test/                  # E2E test suite
+├── .env                   # Auto-configured secrets
+└── package.json           # All dependencies ready
 ```
 
 ---
 
 ## Usage Examples
 
-### 1️ Interactive Mode (Recommended)
+### 1. Interactive Mode (Recommended)
 
 **Zero configuration. Just answer questions:**
 
@@ -320,7 +332,7 @@ The CLI guides you through:
 
 **Perfect for:** First-time users, learning, rapid prototyping
 
-### 2️ Quick Mode
+### 2. Quick Mode
 
 **Fastest way to get started:**
 
@@ -333,7 +345,7 @@ npm run prisma:generate && npm run prisma:migrate && npm start:dev
 
 **Perfect for:** Experienced users who know the drill
 
-### 3️ Automation Mode
+### 3. Automation Mode
 
 **For CI/CD and scripts:**
 
@@ -352,6 +364,12 @@ npx create-nestjs-auth@latest my-app --skip-git
 
 # Combine options
 npx create-nestjs-auth@latest my-app --yes --skip-git --package-manager bun
+
+# Specify ORM and database
+npx create-nestjs-auth@latest my-app --orm drizzle --database postgres --yes
+
+# MongoDB with Mongoose
+npx create-nestjs-auth@latest my-app --orm mongoose --yes
 ```
 
 **Perfect for:** CI/CD pipelines, automation scripts, Docker builds
@@ -470,10 +488,12 @@ export class PostsController {
 
 ---
 
-## ️ CLI Options Reference
+## CLI Options Reference
 
 | Option | Description | Example |
 |--------|-------------|---------|
+| `--orm <orm>` | Select ORM (prisma, drizzle, typeorm, mongoose) | `npx create-nestjs-auth@latest my-app --orm drizzle` |
+| `--database <db>` | Select database (postgres, mysql, sqlite, mongodb) | `npx create-nestjs-auth@latest my-app --database mysql` |
 | `--yes` | Skip all prompts, use defaults | `npx create-nestjs-auth@latest my-app --yes` |
 | `--skip-install` | Don't install dependencies | `npx create-nestjs-auth@latest my-app --skip-install` |
 | `--package-manager <pm>` | Force package manager (npm, pnpm, yarn, bun) | `npx create-nestjs-auth@latest my-app --package-manager pnpm` |
@@ -488,75 +508,159 @@ export class PostsController {
 | Requirement | Version | Why? |
 |------------|---------|------|
 | **Node.js** | >= 20.x | Native fetch, improved performance |
-| **PostgreSQL** | >= 16.x | Latest features, better JSON support |
+| **Database** | PostgreSQL 16+, MySQL 8+, SQLite 3+, or MongoDB 6+ | Your choice! |
 | **Package Manager** | npm/pnpm/yarn/bun | Any works, auto-detected |
 
 > **Note:** The CLI automatically checks your Node.js version before proceeding.
 
-### Don't Have PostgreSQL?
+### Database Setup Options
 
-**Option 1: Local with Docker**
+**PostgreSQL (Local with Docker)**
 ```bash
 docker run --name postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:16
 ```
 
-**Option 2: Managed Database**
+**MySQL (Local with Docker)**
+```bash
+docker run --name mysql -e MYSQL_ROOT_PASSWORD=mysql -p 3306:3306 -d mysql:8
+```
+
+**MongoDB (Local with Docker)**
+```bash
+docker run --name mongodb -p 27017:27017 -d mongo:6
+```
+
+**SQLite**
+No setup needed! SQLite creates a local file automatically.
+
+**Managed Database Services**
 - [Supabase](https://supabase.com) - Free PostgreSQL with GUI
 - [Neon](https://neon.tech) - Serverless Postgres, generous free tier
-- [Railway](https://railway.app) - PostgreSQL + deployment
+- [PlanetScale](https://planetscale.com) - Serverless MySQL
+- [MongoDB Atlas](https://www.mongodb.com/atlas) - Free MongoDB cluster
+- [Railway](https://railway.app) - PostgreSQL/MySQL + deployment
 - [Render](https://render.com) - Free PostgreSQL database
 
 ---
 
-## ️ Architecture Overview
+## ORM & Database Options
+
+Choose the combination that fits your project:
+
+### Supported ORMs
+
+| ORM | Best For | Features |
+|-----|----------|----------|
+| **[Prisma](https://www.prisma.io)** | Most projects | Type-safe queries, visual studio, migrations |
+| **[Drizzle](https://orm.drizzle.team)** | SQL lovers | Lightweight, SQL-like syntax, fast |
+| **[TypeORM](https://typeorm.io)** | Enterprise apps | Decorators, Active Record & Data Mapper |
+| **[Mongoose](https://mongoosejs.com)** | MongoDB users | Schema validation, middleware, populate |
+
+### Supported Databases
+
+| Database | ORMs | Connection URL Example |
+|----------|------|----------------------|
+| **PostgreSQL** | Prisma, Drizzle, TypeORM | `postgresql://user:pass@localhost:5432/db` |
+| **MySQL** | Prisma, Drizzle, TypeORM | `mysql://user:pass@localhost:3306/db` |
+| **SQLite** | Prisma, Drizzle, TypeORM | `file:./dev.db` |
+| **MongoDB** | Mongoose | `mongodb://localhost:27017/db` |
+
+### ORM + Database Compatibility
+
+```
+┌─────────────┬────────────┬───────┬────────┬─────────┐
+│             │ PostgreSQL │ MySQL │ SQLite │ MongoDB │
+├─────────────┼────────────┼───────┼────────┼─────────┤
+│ Prisma      │     ✅     │  ✅   │   ✅   │   ❌    │
+│ Drizzle     │     ✅     │  ✅   │   ✅   │   ❌    │
+│ TypeORM     │     ✅     │  ✅   │   ✅   │   ❌    │
+│ Mongoose    │     ❌     │  ❌   │   ❌   │   ✅    │
+└─────────────┴────────────┴───────┴────────┴─────────┘
+```
+
+### Which Should I Choose?
+
+**Choose Prisma if:**
+- You want the best developer experience
+- You're new to ORMs
+- You want visual database management (Prisma Studio)
+
+**Choose Drizzle if:**
+- You prefer writing SQL-like code
+- You want a lightweight solution
+- Performance is critical
+
+**Choose TypeORM if:**
+- You're familiar with decorators
+- You need Active Record pattern
+- You're migrating from other languages (Java, C#)
+
+**Choose Mongoose if:**
+- You're using MongoDB
+- You need flexible schemas
+- You want document validation
+
+---
+
+## Architecture Overview
 
 ### What's Inside
 
-The generated project follows NestJS best practices:
+The generated project follows NestJS best practices with a modular architecture:
 
 ```
 my-app/
-  src/
-     modules/auth/
-       auth.controller.ts      # Login, signup, refresh, logout
-       auth.service.ts         # JWT logic, token rotation
-       strategies/             # JWT strategies
-   
-     modules/users/
-       users.controller.ts     # CRUD endpoints
-       users.service.ts        # User business logic
-       dto/                    # Data transfer objects
-   
-     modules/health/
-       health.controller.ts    # K8s-ready health checks
-   
-    ️ common/
-       decorators/             # @Roles(), @Public(), @GetUser()
-       guards/                 # JWT + RBAC guards
-       interceptors/           # Response formatting
-       filters/                # Exception handling
-       validators/             # Custom validation rules
-   
-    ️ config/
-        config.module.ts        # Environment config
-        env.validation.ts       # Zod validation
-        logger.config.ts        # Pino logger setup
-
- ️ prisma/
-    schema.prisma               # Database models
-    seed.ts                     # Default admin user
-    migrations/                 # Version-controlled DB changes
-
-  test/
-    app.e2e-spec.ts            # End-to-end tests
-    jest-e2e.json              # Test configuration
-
-  Config Files
-     .env                        # Your secrets (auto-generated)
-     .env.example                # Template for team
-     nest-cli.json               # NestJS config
-     tsconfig.json               # TypeScript config
-     eslint.config.mjs           # Linting rules
+├── src/
+│   ├── modules/
+│   │   ├── auth/
+│   │   │   ├── auth.controller.ts      # Login, signup, refresh, logout
+│   │   │   ├── auth.service.ts         # JWT logic, token rotation
+│   │   │   └── auth.module.ts
+│   │   │
+│   │   ├── users/
+│   │   │   ├── users.controller.ts     # CRUD endpoints
+│   │   │   ├── users.service.ts        # User business logic
+│   │   │   └── dto/                    # Data transfer objects
+│   │   │
+│   │   └── health/
+│   │       └── health.controller.ts    # K8s-ready health checks
+│   │
+│   ├── common/
+│   │   ├── decorators/             # @Roles(), @Public(), @GetUser()
+│   │   ├── guards/                 # JWT + RBAC guards
+│   │   ├── interceptors/           # Response formatting
+│   │   ├── filters/                # Exception handling
+│   │   └── validators/             # Custom validation rules
+│   │
+│   ├── config/
+│   │   ├── config.module.ts        # Environment config
+│   │   ├── env.validation.ts       # Zod validation
+│   │   └── logger.config.ts        # Pino logger setup
+│   │
+│   └── database/                   # ORM-specific setup
+│       # Prisma:   prisma.service.ts, prisma.module.ts
+│       # Drizzle:  drizzle.ts, schema.ts, database.module.ts
+│       # TypeORM:  entities/, database.module.ts
+│       # Mongoose: schemas/, database.module.ts
+│
+├── prisma/ (if using Prisma)
+│   ├── schema.prisma               # Database models
+│   ├── seed.ts                     # Default admin user
+│   └── migrations/                 # Version-controlled DB changes
+│
+├── drizzle/ (if using Drizzle)
+│   ├── drizzle.config.ts           # Drizzle configuration
+│   └── migrations/                 # SQL migrations
+│
+├── test/
+│   ├── app.e2e-spec.ts             # End-to-end tests
+│   └── jest-e2e.json               # Test configuration
+│
+├── .env                            # Your secrets (auto-generated)
+├── .env.example                    # Template for team
+├── nest-cli.json                   # NestJS config
+├── tsconfig.json                   # TypeScript config
+└── eslint.config.mjs               # Linting rules
 ```
 
 ### Key Design Patterns
@@ -565,7 +669,7 @@ my-app/
 - **Interceptors** - Transform responses, add metadata
 - **Decorators** - Clean syntax for auth requirements
 - **DTOs** - Type-safe request validation
-- **Prisma** - Type-safe database access
+- **ORM Agnostic** - Same API regardless of database choice
 
 ---
 
@@ -903,6 +1007,46 @@ npm run prisma:generate
 </details>
 
 <details>
+<summary><b> Drizzle migration errors</b></summary>
+
+Generate and run migrations:
+```bash
+npm run drizzle:generate
+npm run drizzle:migrate
+```
+
+Check your `drizzle.config.ts` has the correct database URL.
+
+</details>
+
+<details>
+<summary><b> TypeORM connection errors</b></summary>
+
+Check your `database.module.ts` configuration matches your `.env`:
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+```
+
+Run migrations:
+```bash
+npm run typeorm:migration:run
+```
+
+</details>
+
+<details>
+<summary><b> Mongoose connection errors</b></summary>
+
+Ensure MongoDB is running and check your connection string:
+```env
+DATABASE_URL=mongodb://localhost:27017/mydb
+```
+
+For MongoDB Atlas, use the full connection string from your dashboard.
+
+</details>
+
+<details>
 <summary><b> Still stuck?</b></summary>
 
 Open an issue with:
@@ -994,8 +1138,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 |------------|---------|---------|
 | [NestJS](https://nestjs.com) | 11.0 | Progressive Node.js framework |
 | [TypeScript](https://www.typescriptlang.org) | 5.7 | Type safety |
-| [Prisma](https://www.prisma.io) | 6.19 | Next-gen ORM |
-| [PostgreSQL](https://www.postgresql.org) | 16+ | Database |
+| [Prisma](https://www.prisma.io) | 6.x | Type-safe ORM (option 1) |
+| [Drizzle](https://orm.drizzle.team) | Latest | Lightweight ORM (option 2) |
+| [TypeORM](https://typeorm.io) | 0.3.x | Decorator-based ORM (option 3) |
+| [Mongoose](https://mongoosejs.com) | 8.x | MongoDB ODM (option 4) |
+| [PostgreSQL](https://www.postgresql.org) | 16+ | Relational database |
+| [MySQL](https://www.mysql.com) | 8+ | Relational database |
+| [SQLite](https://www.sqlite.org) | 3+ | Embedded database |
+| [MongoDB](https://www.mongodb.com) | 6+ | Document database |
 | [Passport JWT](https://www.passportjs.org) | - | JWT authentication |
 | [Bcrypt](https://github.com/kelektiv/node.bcrypt.js) | - | Password hashing |
 | [Zod](https://zod.dev) | - | Schema validation |
@@ -1010,9 +1160,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ### Documentation
 - [Full Template Documentation](https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate)
-- [Interactive Setup Guide](INTERACTIVE_SETUP.md)
-- [Quick Reference](QUICK_REFERENCE.md)
-- [Changelog](CHANGELOG.md)
+- [Contributing Guide](CONTRIBUTING.md) - How to contribute
+- [Security Policy](SECURITY.md) - Reporting vulnerabilities
+- [Changelog](CHANGELOG.md) - Version history
 
 ### Community
 - [GitHub Discussions](https://github.com/masabinhok/create-nestjs-auth/discussions) - Ask questions, share ideas
@@ -1025,7 +1175,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 - [JWT.io](https://jwt.io) - Learn about JWT tokens
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/) - Web security basics
 
-### ️ Related Projects
+### Related Projects
 - [create-next-app](https://nextjs.org/docs/api-reference/create-next-app) - Create Next.js apps
 - [create-t3-app](https://create.t3.gg) - Full-stack TypeScript
 - [nest-cli](https://docs.nestjs.com/cli/overview) - Official NestJS CLI
@@ -1035,9 +1185,39 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 ## FAQ
 
 <details>
-<summary><b>Can I use this with MySQL/MongoDB?</b></summary>
+<summary><b>Which ORM should I choose?</b></summary>
 
-Currently, only PostgreSQL is supported. However, you can modify the generated Prisma schema to work with other databases. See [Prisma docs](https://www.prisma.io/docs/reference/database-reference/supported-databases) for supported databases.
+- **Prisma** - Best for most projects. Great developer experience, type safety, and visual database management.
+- **Drizzle** - Best for SQL lovers who want lightweight, performant queries.
+- **TypeORM** - Best for enterprise apps or devs coming from Java/C# backgrounds.
+- **Mongoose** - Required if you're using MongoDB.
+
+All ORMs produce the same API endpointsyou can switch later if needed.
+
+</details>
+
+<details>
+<summary><b>Can I use MySQL/SQLite/MongoDB?</b></summary>
+
+**Yes!** The CLI supports:
+- **PostgreSQL** - With Prisma, Drizzle, or TypeORM
+- **MySQL** - With Prisma, Drizzle, or TypeORM
+- **SQLite** - With Prisma, Drizzle, or TypeORM
+- **MongoDB** - With Mongoose
+
+Just select your preferred combination during setup.
+
+</details>
+
+<details>
+<summary><b>Can I switch ORMs after project creation?</b></summary>
+
+It's possible but requires manual work. The auth/user service layer has the same interface across all ORMs, but you'd need to:
+1. Install new ORM dependencies
+2. Replace database module and service files
+3. Migrate your data
+
+We recommend choosing the right ORM upfront.
 
 </details>
 
@@ -1170,7 +1350,7 @@ Found a bug? Have a feature idea? [Open an issue](https://github.com/masabinhok/
 
 ---
 
-<h3>Built with ️ by <a href="https://sabinshrestha69.com.np">Sabin Shrestha</a></h3>
+<h3>Built by <a href="https://sabinshrestha69.com.np">Sabin Shrestha</a></h3>
 
 <p>
   <a href="https://github.com/masabinhok">
@@ -1198,12 +1378,12 @@ Found a bug? Have a feature idea? [Open an issue](https://github.com/masabinhok/
 
 <sub>
  Generated projects follow <strong>NestJS best practices</strong> and <strong>OWASP security guidelines</strong><br>
- <strong>1.1.0</strong>  Updated November 2025  MIT License
+ <strong>v2.0.0</strong> | Multi-ORM & Multi-Database Support | December 2025 | MIT License
 </sub>
 
 <br><br>
 
-**Now go build something amazing! **
+**Now go build something amazing!**
 
 </div>
 

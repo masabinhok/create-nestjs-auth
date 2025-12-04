@@ -1,38 +1,46 @@
 # Development files
 node_modules/
 .git/
-.gitignore
 *.log
 npm-debug.log*
 .DS_Store
 
-# Test outputs
+# Test outputs (patterns for generated test projects)
 test-output/
-my-test-app/
-test-app/
+test-*/
+my-*/
 *-test/
+*-app/
 
-# IDE
+# IDE & Editor
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-*
 
-# Template's node_modules and build artifacts
-template/node_modules/
-template/dist/
-template/build/
-template/coverage/
-template/.env
-template/.env.local
-template/.temp/
-template/.tmp/
-
-# Template's Prisma generated files (will be regenerated)
-template/generated/
-
-# Template's git directory
-template/.git/
+# Template build artifacts (if any)
+templates/*/node_modules/
+templates/*/dist/
+templates/*/build/
+templates/*/coverage/
+templates/*/.env
+templates/*/.env.local
+templates/*/.temp/
+templates/*/.tmp/
+templates/*/generated/
+templates/*/.git/
 
 # Misc
 .npmrc
+.env
+*.tgz
+
+# Documentation (only ship README, LICENSE, CHANGELOG)
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+SECURITY.md
+.github/
+
+# Unnecessary for npm package
+package-lock.json

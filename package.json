@@ -1,64 +1,74 @@
 {
-   "name": "create-nestjs-auth",
-   "version": "1.1.2",
-   "description": "CLI tool to scaffold a production-ready NestJS authentication system with JWT, refresh tokens, and RBAC",
-   "keywords": [
-      "nestjs",
-      "authentication",
-      "jwt",
-      "auth",
-      "boilerplate",
-      "starter",
-      "template",
-      "rbac",
-      "refresh-token",
-      "prisma",
-      "postgresql",
-      "cli",
-      "scaffold",
-      "generator"
-   ],
-   "author": {
-      "name": "Sabin Shrestha",
-      "email": "sabin.shrestha.er@gmail.com",
-      "url": "https://sabinshrestha69.com.np"
-   },
-   "license": "MIT",
-   "homepage": "https://github.com/masabinhok/create-nestjs-auth#readme",
-   "repository": {
-      "type": "git",
-      "url": "https://github.com/masabinhok/create-nestjs-auth.git"
-   },
-   "bugs": {
-      "url": "https://github.com/masabinhok/create-nestjs-auth/issues"
-   },
-   "bin": {
-      "create-nestjs-auth": "./index.js"
-   },
-   "type": "commonjs",
-   "engines": {
-      "node": ">=20.0.0",
-      "npm": ">=10.0.0"
-   },
-   "scripts": {
-      "test": "node index.js test-output --skip-install",
-      "test:full": "node index.js test-output",
-      "prepublishOnly": "echo 'Ready to publish create-nestjs-auth'"
-   },
-   "files": [
-      "index.js",
-      "template",
-      "README.md",
-      "LICENSE"
-   ],
-   "dependencies": {
-      "chalk": "^4.1.2",
-      "commander": "^14.0.2",
-      "fs-extra": "^11.3.2",
-      "inquirer": "^8.2.7"
-   },
-   "devDependencies": {
-      "@types/node": "^24.10.1",
-      "typescript": "^5.9.3"
-   }
+  "name": "create-nestjs-auth",
+  "version": "2.0.0",
+  "description": "CLI tool to scaffold a production-ready NestJS authentication system with JWT, refresh tokens, and RBAC",
+  "keywords": [
+    "nestjs",
+    "authentication",
+    "jwt",
+    "auth",
+    "boilerplate",
+    "starter",
+    "template",
+    "rbac",
+    "refresh-token",
+    "prisma",
+    "drizzle",
+    "typeorm",
+    "mongoose",
+    "postgresql",
+    "mysql",
+    "mongodb",
+    "sqlite",
+    "cli",
+    "scaffold",
+    "generator"
+  ],
+  "author": {
+    "name": "Sabin Shrestha",
+    "email": "sabin.shrestha.er@gmail.com",
+    "url": "https://sabinshrestha69.com.np"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/masabinhok/create-nestjs-auth#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/masabinhok/create-nestjs-auth.git"
+  },
+  "bugs": {
+    "url": "https://github.com/masabinhok/create-nestjs-auth/issues"
+  },
+  "bin": {
+    "create-nestjs-auth": "./index.js"
+  },
+  "main": "./index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "test": "node index.js test-output --skip-install --skip-git --yes",
+    "test:full": "node index.js test-output",
+    "test:prisma": "node index.js test-prisma --orm prisma --database postgres --skip-install --skip-git --yes",
+    "test:drizzle": "node index.js test-drizzle --orm drizzle --database postgres --skip-install --skip-git --yes",
+    "test:typeorm": "node index.js test-typeorm --orm typeorm --database postgres --skip-install --skip-git --yes",
+    "test:mongoose": "node index.js test-mongoose --orm mongoose --skip-install --skip-git --yes",
+    "clean": "node -e \"require('fs-extra').removeSync('test-output'); require('fs-extra').removeSync('test-prisma'); require('fs-extra').removeSync('test-drizzle'); require('fs-extra').removeSync('test-typeorm'); require('fs-extra').removeSync('test-mongoose');\"",
+    "prepublishOnly": "npm run clean && echo 'Ready to publish create-nestjs-auth'"
+  },
+  "files": [
+    "index.js",
+    "bin/",
+    "src/",
+    "templates/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^14.0.0",
+    "fs-extra": "^11.2.0",
+    "inquirer": "^8.2.6"
+  }
 }
