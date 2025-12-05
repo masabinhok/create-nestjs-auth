@@ -132,6 +132,23 @@ async function setupPrisma(targetDir, packageManager) {
 
   if (!setupDatabase) return;
 
+  // Prompt for migration name before running prisma commands
+  const { migrationName } = await inquirer.prompt([{
+    type: 'input',
+    name: 'migrationName',
+    message: 'Enter migration name:',
+    default: 'init',
+    validate: (input) => {
+      if (!input || input.trim() === '') {
+        return 'Migration name is required';
+      }
+      if (!/^[a-zA-Z0-9_-]+$/.test(input)) {
+        return 'Migration name can only contain letters, numbers, underscores, and hyphens';
+      }
+      return true;
+    },
+  }]);
+
   console.log(chalk.yellow('\n📦 Setting up database...\n'));
   const pmPrefix = getRunPrefix(packageManager);
 
@@ -140,7 +157,8 @@ async function setupPrisma(targetDir, packageManager) {
     execSync(`${pmPrefix} prisma:generate`, { cwd: targetDir, stdio: 'inherit' });
     
     console.log(chalk.gray('\n   Running database migrations...'));
-    execSync(`${pmPrefix} prisma:migrate`, { cwd: targetDir, stdio: 'inherit' });
+    // Run prisma directly with --name to avoid double prompt
+    execSync(`npx prisma migrate dev --name ${migrationName}`, { cwd: targetDir, stdio: 'inherit' });
     
     console.log(chalk.gray('\n   Seeding database...'));
     execSync(`${pmPrefix} prisma:seed`, { cwd: targetDir, stdio: 'inherit' });
