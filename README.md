@@ -23,7 +23,7 @@ npx create-nestjs-auth@latest
 
 ---
 
-**v2.0.0** | **4 ORMs** (Prisma, Drizzle, TypeORM, Mongoose) | **4 Databases** (PostgreSQL, MySQL, SQLite, MongoDB)
+**v2.0.8** | **4 ORMs** (Prisma, Drizzle, TypeORM, Mongoose) | **4 Databases** (PostgreSQL, MySQL, SQLite, MongoDB)
 
 </div>
 
@@ -1378,7 +1378,7 @@ Found a bug? Have a feature idea? [Open an issue](https://github.com/masabinhok/
 
 <sub>
  Generated projects follow <strong>NestJS best practices</strong> and <strong>OWASP security guidelines</strong><br>
- <strong>v2.0.0</strong> | Multi-ORM & Multi-Database Support | December 2025 | MIT License
+ <strong>v2.0.8</strong> | Multi-ORM & Multi-Database Support | December 2025 | MIT License
 </sub>
 
 <br><br>
