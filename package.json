@@ -1,6 +1,6 @@
 {
   "name": "create-nestjs-auth",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "CLI tool to scaffold a production-ready NestJS authentication system with JWT, refresh tokens, and RBAC",
   "keywords": [
     "nestjs",
