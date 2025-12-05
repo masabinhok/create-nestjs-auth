@@ -1,9 +1,15 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-import { User, UserSchema } from '../../schemas/user.schema';
-import { RefreshToken, RefreshTokenSchema } from '../../schemas/refresh-token.schema';
+import { UsersController } from 'src/modules/users/users.controller';
+import { UsersService } from 'src/modules/users/users.service';
+import { User, UserSchema } from 'src/schemas/user.schema';
+import { RefreshToken, RefreshTokenSchema } from 'src/schemas/refresh-token.schema';
+import { MongooseUserRepository } from 'src/repositories/user.repository';
+import { MongooseRefreshTokenRepository } from 'src/repositories/refresh-token.repository';
+import {
+  USER_REPOSITORY,
+  REFRESH_TOKEN_REPOSITORY,
+} from 'src/common/interfaces/repository.interface';
 
 @Module({
   imports: [
@@ -13,7 +19,19 @@ import { RefreshToken, RefreshTokenSchema } from '../../schemas/refresh-token.sc
     ]),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
-  exports: [UsersService],
+  providers: [
+    UsersService,
+    MongooseUserRepository,
+    MongooseRefreshTokenRepository,
+    {
+      provide: USER_REPOSITORY,
+      useClass: MongooseUserRepository,
+    },
+    {
+      provide: REFRESH_TOKEN_REPOSITORY,
+      useClass: MongooseRefreshTokenRepository,
+    },
+  ],
+  exports: [UsersService, USER_REPOSITORY, REFRESH_TOKEN_REPOSITORY],
 })
 export class UsersModule {}

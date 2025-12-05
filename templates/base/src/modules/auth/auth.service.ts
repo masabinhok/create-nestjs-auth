@@ -1,54 +1,59 @@
 import {
   Injectable,
+  Inject,
   ConflictException,
   ForbiddenException,
   UnauthorizedException,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThanOrEqual, In } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
+import * as bcrypt from 'bcrypt';
 import { SignupDto } from './dtos/signup.dto';
 import { LoginDto } from './dtos/login.dto';
-import { User } from 'src/entities/user.entity';
-import { RefreshToken } from 'src/entities/refresh-token.entity';
+import {
+  IUserRepository,
+  IRefreshTokenRepository,
+  USER_REPOSITORY,
+  REFRESH_TOKEN_REPOSITORY,
+} from 'src/common/interfaces/repository.interface';
+import { IUser, UserRole } from 'src/common/interfaces/user.interface';
+
+const SALT_ROUNDS = 12;
+const MAX_TOKENS_PER_USER = 5;
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    @InjectRepository(RefreshToken)
-    private refreshTokenRepository: Repository<RefreshToken>,
-    private jwtService: JwtService,
-    private config: ConfigService,
-    private logger: Logger,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: IUserRepository,
+    @Inject(REFRESH_TOKEN_REPOSITORY)
+    private readonly refreshTokenRepository: IRefreshTokenRepository,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly logger: Logger,
   ) {}
 
   async signup(signupDto: SignupDto) {
     const { email, password, fullName } = signupDto;
 
-    const existingUser = await this.userRepository.findOne({
-      where: { email },
-    });
-
+    // Check if user already exists
+    const existingUser = await this.userRepository.findByEmail(email.toLowerCase());
     if (existingUser) {
       throw new ConflictException('Email already in use');
     }
 
-    const hashedPassword = await this.hashData(password);
-
-    const newUser = this.userRepository.create({
-      email,
-      passwordHash: hashedPassword,
+    // Hash password and create user
+    const passwordHash = await this.hashData(password);
+    const newUser = await this.userRepository.create({
+      email: email.toLowerCase(),
+      passwordHash,
       fullName,
+      role: UserRole.USER,
     });
 
-    await this.userRepository.save(newUser);
-
+    // Log without PII (email address)
     this.logger.log({
       message: 'New user registered',
       userId: newUser.id,
@@ -69,28 +74,29 @@ export class AuthService {
   async login(loginDto: LoginDto, deviceInfo?: string, ipAddress?: string) {
     const { email, password } = loginDto;
 
-    const user = await this.userRepository.findOne({
-      where: { email },
-    });
+    const user = await this.userRepository.findByEmail(email.toLowerCase());
 
+    // Prevent timing attacks by always hashing, even if user doesn't exist
     const passwordHash =
       user?.passwordHash ||
       (await this.hashData('dummy-password-to-prevent-timing-attack'));
     const passwordMatches = await bcrypt.compare(password, passwordHash);
 
+    // Use consistent error message to prevent account enumeration
     if (!user || !user.isActive || !passwordMatches) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    // Generate tokens
     const tokens = await this.generateTokens(user);
+
+    // Store hashed refresh token
     const hashedRt = await this.hashData(tokens.refreshToken);
+    const expiresAt = this.calculateExpiry(
+      this.configService.get<string>('JWT_REFRESH_EXPIRY') || '7d',
+    );
 
-    const refreshExpiry =
-      this.config.get<string>('JWT_REFRESH_EXPIRY') || '30d';
-    const expiryMs = this.parseExpiryToMilliseconds(refreshExpiry);
-    const expiresAt = new Date(Date.now() + expiryMs);
-
-    const refreshToken = this.refreshTokenRepository.create({
+    await this.refreshTokenRepository.create({
       token: hashedRt,
       userId: user.id,
       deviceInfo: deviceInfo || 'Unknown Device',
@@ -98,7 +104,7 @@ export class AuthService {
       expiresAt,
     });
 
-    await this.refreshTokenRepository.save(refreshToken);
+    // Clean up expired tokens for this user
     await this.cleanupExpiredTokens(user.id);
 
     this.logger.log({
@@ -125,50 +131,44 @@ export class AuthService {
     deviceInfo?: string,
     ipAddress?: string,
   ) {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-    });
+    const user = await this.userRepository.findById(userId);
 
     if (!user || !user.isActive) {
       throw new ForbiddenException('Invalid refresh token');
     }
 
-    const storedTokens = await this.refreshTokenRepository.find({
-      where: {
-        userId: user.id,
-        expiresAt: MoreThanOrEqual(new Date()),
-      },
-    });
+    // Find matching refresh token in database
+    const storedTokens = await this.refreshTokenRepository.findValidTokensByUserId(user.id);
 
-    let isValidToken = false;
     let validTokenId: string | null = null;
 
+    // Check if provided token matches any stored token
     for (const storedToken of storedTokens) {
       const matches = await bcrypt.compare(rt, storedToken.token);
       if (matches) {
-        isValidToken = true;
         validTokenId = storedToken.id;
         break;
       }
     }
 
-    if (!isValidToken || !validTokenId) {
+    if (!validTokenId) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
+    // Generate new tokens
     const tokens = await this.generateTokens(user);
     const hashedRt = await this.hashData(tokens.refreshToken);
+    const expiresAt = this.calculateExpiry(
+      this.configService.get<string>('JWT_REFRESH_EXPIRY') || '7d',
+    );
 
-    const refreshExpiry =
-      this.config.get<string>('JWT_REFRESH_EXPIRY') || '30d';
-    const expiryMs = this.parseExpiryToMilliseconds(refreshExpiry);
-    const expiresAt = new Date(Date.now() + expiryMs);
-
+    // Update the refresh token (rotation)
     await this.refreshTokenRepository.update(validTokenId, {
       token: hashedRt,
       deviceInfo: deviceInfo || 'Unknown Device',
       ipAddress: ipAddress || 'Unknown IP',
       expiresAt,
+      updatedAt: new Date(),
     });
 
     return tokens;
@@ -176,9 +176,8 @@ export class AuthService {
 
   async logout(userId: string, rt?: string) {
     if (rt) {
-      const storedTokens = await this.refreshTokenRepository.find({
-        where: { userId },
-      });
+      // Find and delete the specific refresh token
+      const storedTokens = await this.refreshTokenRepository.findAllByUserId(userId);
 
       for (const storedToken of storedTokens) {
         const matches = await bcrypt.compare(rt, storedToken.token);
@@ -188,7 +187,8 @@ export class AuthService {
         }
       }
     } else {
-      await this.refreshTokenRepository.delete({ userId });
+      // Logout from all devices
+      await this.refreshTokenRepository.deleteAllByUserId(userId);
     }
 
     return {
@@ -197,9 +197,7 @@ export class AuthService {
   }
 
   async getMe(userId: string) {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-    });
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -216,71 +214,55 @@ export class AuthService {
   // Helper Methods
 
   async hashData(data: string): Promise<string> {
-    const salt = await bcrypt.genSalt(12);
+    const salt = await bcrypt.genSalt(SALT_ROUNDS);
     return bcrypt.hash(data, salt);
   }
 
   async generateTokens(
-    user: User,
+    user: IUser,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = { sub: user.id, role: user.role, email: user.email };
-    const accessExpiry = this.config.get<string>('JWT_ACCESS_EXPIRY') || '15m';
-    const refreshExpiry = this.config.get<string>('JWT_REFRESH_EXPIRY') || '7d';
+    const accessExpiry = this.configService.get<string>('JWT_ACCESS_EXPIRY') || '15m';
+    const refreshExpiry = this.configService.get<string>('JWT_REFRESH_EXPIRY') || '7d';
 
     const [accessToken, refreshToken] = await Promise.all([
-      // @ts-expect-error - JWT library type definition issue with expiresIn accepting string
       this.jwtService.signAsync(payload, {
-        secret: this.config.get<string>('JWT_ACCESS_SECRET'),
+        secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
         expiresIn: accessExpiry,
-      }),
-      // @ts-expect-error - JWT library type definition issue with expiresIn accepting string
+      } as any),
       this.jwtService.signAsync(payload, {
-        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: refreshExpiry,
-      }),
+      } as any),
     ]);
 
     return { accessToken, refreshToken };
   }
 
   private async cleanupExpiredTokens(userId: string) {
-    await this.refreshTokenRepository
-      .createQueryBuilder()
-      .delete()
-      .where('userId = :userId AND expiresAt < :now', {
-        userId,
-        now: new Date(),
-      })
-      .execute();
+    // Remove expired refresh tokens for this user
+    await this.refreshTokenRepository.deleteExpiredByUserId(userId);
 
-    const tokens = await this.refreshTokenRepository.find({
-      where: { userId },
-      order: { createdAt: 'DESC' },
-      skip: 5,
-      take: 100,
-    });
-
-    if (tokens.length > 0) {
-      await this.refreshTokenRepository.delete({
-        id: In(tokens.map((t) => t.id)),
-      });
-    }
+    // Keep only the N most recent tokens per user
+    await this.refreshTokenRepository.keepRecentTokens(userId, MAX_TOKENS_PER_USER);
   }
 
-  private parseExpiryToMilliseconds(expiry: string): number {
-    const match = expiry.match(/^(\d+)([smhd])$/);
-    if (!match) return 30 * 24 * 60 * 60 * 1000;
+  private calculateExpiry(expiresIn: string): Date {
+    const match = expiresIn.match(/^(\d+)([smhd])$/);
+    if (!match) {
+      return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Default 7 days
+    }
 
     const value = parseInt(match[1], 10);
     const unit = match[2];
 
-    const units: { [key: string]: number } = {
+    const multipliers: Record<string, number> = {
       s: 1000,
       m: 60 * 1000,
       h: 60 * 60 * 1000,
       d: 24 * 60 * 60 * 1000,
     };
 
-    return value * units[unit];
+    return new Date(Date.now() + value * multipliers[unit]);
   }
 }
