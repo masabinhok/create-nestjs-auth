@@ -1,11 +1,12 @@
 import { Controller, Get, Inject } from '@nestjs/common';
-import { Pool } from 'pg';
+import { sql } from 'drizzle-orm';
 import { DRIZZLE } from '../../database/database.module';
+import { DrizzleDB } from '../../database/drizzle';
 import { Public } from '../../common/decorators/public.decorator';
 
 @Controller('health')
 export class HealthController {
-  constructor(@Inject(DRIZZLE) private db: any) {}
+  constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
 
   @Public()
   @Get()
@@ -14,7 +15,8 @@ export class HealthController {
 
     try {
       // Try to execute a simple query
-      await this.db.execute('SELECT 1');
+      // Simple liveness query against PostgreSQL
+      await this.db.execute(sql`select 1`);
       dbStatus = 'healthy';
     } catch (error) {
       dbStatus = 'unhealthy';

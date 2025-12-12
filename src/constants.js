@@ -17,7 +17,7 @@ const ORM_OPTIONS = {
   drizzle: {
     name: 'Drizzle',
     description: 'Lightweight TypeScript ORM',
-    databases: ['postgres', 'mysql', 'sqlite'],
+    databases: ['postgres'],
   },
   mongoose: {
     name: 'Mongoose',

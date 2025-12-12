@@ -40,7 +40,7 @@ program
   .option('--package-manager <pm>', 'Package manager to use (npm|pnpm|yarn|bun)')
   .option('--skip-git', 'Skip git repository initialization')
   .option('--orm <orm>', 'ORM to use (prisma|typeorm|drizzle|mongoose)')
-  .option('--database <db>', 'Database to use (postgres|mysql|sqlite|mongodb)')
+  .option('--database <db>', 'Database to use (postgres|mysql|sqlite|mongodb) — Drizzle supports postgres only')
   .option('--yes', 'Skip all prompts and use defaults')
   .action(async (appName, options) => {
     try {

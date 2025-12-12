@@ -552,7 +552,7 @@ Choose the combination that fits your project:
 | ORM | Best For | Features |
 |-----|----------|----------|
 | **[Prisma](https://www.prisma.io)** | Most projects | Type-safe queries, visual studio, migrations |
-| **[Drizzle](https://orm.drizzle.team)** | SQL lovers | Lightweight, SQL-like syntax, fast |
+| **[Drizzle](https://orm.drizzle.team)** | SQL lovers | Lightweight, SQL-like syntax, fast (PostgreSQL only) |
 | **[TypeORM](https://typeorm.io)** | Enterprise apps | Decorators, Active Record & Data Mapper |
 | **[Mongoose](https://mongoosejs.com)** | MongoDB users | Schema validation, middleware, populate |
 
@@ -561,8 +561,8 @@ Choose the combination that fits your project:
 | Database | ORMs | Connection URL Example |
 |----------|------|----------------------|
 | **PostgreSQL** | Prisma, Drizzle, TypeORM | `postgresql://user:pass@localhost:5432/db` |
-| **MySQL** | Prisma, Drizzle, TypeORM | `mysql://user:pass@localhost:3306/db` |
-| **SQLite** | Prisma, Drizzle, TypeORM | `file:./dev.db` |
+| **MySQL** | Prisma, TypeORM | `mysql://user:pass@localhost:3306/db` |
+| **SQLite** | Prisma, TypeORM | `file:./dev.db` |
 | **MongoDB** | Mongoose | `mongodb://localhost:27017/db` |
 
 ### ORM + Database Compatibility
@@ -572,7 +572,7 @@ Choose the combination that fits your project:
 │             │ PostgreSQL │ MySQL │ SQLite │ MongoDB │
 ├─────────────┼────────────┼───────┼────────┼─────────┤
 │ Prisma      │     ✅     │  ✅   │   ✅   │   ❌    │
-│ Drizzle     │     ✅     │  ✅   │   ✅   │   ❌    │
+│ Drizzle     │     ✅     │  ❌   │   ❌   │   ❌    │
 │ TypeORM     │     ✅     │  ✅   │   ✅   │   ❌    │
 │ Mongoose    │     ❌     │  ❌   │   ❌   │   ✅    │
 └─────────────┴────────────┴───────┴────────┴─────────┘
@@ -589,6 +589,8 @@ Choose the combination that fits your project:
 - You prefer writing SQL-like code
 - You want a lightweight solution
 - Performance is critical
+
+Note: The Drizzle template ships with PostgreSQL out of the box. The data access layer uses repository interfaces and Nest DI tokens, so you can swap in your own database driver or schema later without changing the core modules.
 
 **Choose TypeORM if:**
 - You're familiar with decorators

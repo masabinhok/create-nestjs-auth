@@ -98,6 +98,13 @@ async function promptForProjectDetails(providedAppName, options) {
     ? ORM_OPTIONS[selectedOrm].databases[0]
     : options.database || answers.database || 'postgres';
 
+  const supportedDatabases = ORM_OPTIONS[selectedOrm]?.databases || [];
+  if (supportedDatabases.length > 0 && !supportedDatabases.includes(selectedDatabase)) {
+    throw new Error(
+      `Database "${selectedDatabase}" is not supported for ORM "${selectedOrm}". Supported: ${supportedDatabases.join(', ')}`,
+    );
+  }
+
   return {
     appName: providedAppName || answers.appName,
     orm: selectedOrm,
