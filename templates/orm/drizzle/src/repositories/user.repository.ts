@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import { DRIZZLE } from 'src/database/database.module';
 import { DrizzleDB } from 'src/database/drizzle';
 import { users } from 'src/database/schema';
@@ -86,11 +86,15 @@ export class DrizzleUserRepository implements IUserRepository {
         offset,
         limit,
         orderBy: [desc(users.createdAt)],
+        where: eq(users.isActive, true),
       }),
-      this.db.select({ count: users.id }).from(users),
+      this.db
+        .select({ count: sql`count(*)` })
+        .from(users)
+        .where(eq(users.isActive, true)),
     ]);
 
-    const total = countResult.length;
+    const total = Number(countResult[0]?.count ?? 0);
     const totalPages = Math.ceil(total / limit);
 
     return {
@@ -107,8 +111,14 @@ export class DrizzleUserRepository implements IUserRepository {
   }
 
   async count(filter?: { isActive?: boolean }): Promise<number> {
-    const result = await this.db.select({ count: users.id }).from(users);
-    return result.length;
+    let query = this.db.select({ count: sql`count(*)` }).from(users);
+
+    if (filter?.isActive !== undefined) {
+      query = query.where(eq(users.isActive, filter.isActive));
+    }
+
+    const result = await query;
+    return Number(result[0]?.count ?? 0);
   }
 
   private mapToIUser(user: any): IUser {

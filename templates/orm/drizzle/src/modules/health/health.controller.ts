@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import { DRIZZLE } from '../../database/database.module';
 import { DrizzleDB } from '../../database/drizzle';
 import { Public } from '../../common/decorators/public.decorator';
+import { HealthResponse } from '../../common/interfaces/health.interface';
 
 @Controller('health')
 export class HealthController {
@@ -10,8 +11,8 @@ export class HealthController {
 
   @Public()
   @Get()
-  async check() {
-    let dbStatus = 'unhealthy';
+  async check(): Promise<HealthResponse> {
+    let dbStatus: 'healthy' | 'unhealthy' = 'unhealthy';
 
     try {
       // Try to execute a simple query
@@ -22,13 +23,16 @@ export class HealthController {
       dbStatus = 'unhealthy';
     }
 
+    const status: 'ok' | 'error' = dbStatus === 'healthy' ? 'ok' : 'error';
+
     return {
-      status: dbStatus === 'healthy' ? 'ok' : 'error',
+      status,
       timestamp: new Date().toISOString(),
       services: {
         database: {
           status: dbStatus,
           type: 'postgresql',
+          details: { driver: 'drizzle-orm/node-postgres' },
         },
       },
     };

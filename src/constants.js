@@ -53,7 +53,7 @@ const DATABASE_OPTIONS = {
 
 const RESERVED_NAMES = ['node_modules', 'favicon.ico'];
 
-const CLI_VERSION = '2.0.8';
+const CLI_VERSION = '3.0.0';
 
 module.exports = {
   ORM_OPTIONS,
