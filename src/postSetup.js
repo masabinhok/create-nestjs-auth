@@ -19,13 +19,13 @@ const { generateJWTSecret, getRunPrefix } = require('./utils');
  * @returns {Promise<boolean>} Whether interactive setup completed
  */
 async function handlePostSetup(targetDir, appName, options) {
-  const { packageManager, orm, database, yes: isYesMode, skipInstall } = options;
+  const { packageManager, orm, database, swagger, yes: isYesMode, skipInstall } = options;
 
   if (isYesMode || skipInstall) {
     return false;
   }
 
-  printSuccessHeader(appName, orm, database);
+  printSuccessHeader(appName, orm, database, swagger);
 
   const { continueSetup } = await inquirer.prompt([{
     type: 'confirm',
@@ -53,10 +53,13 @@ async function handlePostSetup(targetDir, appName, options) {
 /**
  * Prints the success header
  */
-function printSuccessHeader(appName, orm, database) {
+function printSuccessHeader(appName, orm, database, swagger) {
   console.log(chalk.green('\n✅ Success! Created ' + chalk.bold(appName)));
   console.log(chalk.gray(`   ORM: ${ORM_OPTIONS[orm]?.name || orm}`));
   console.log(chalk.gray(`   Database: ${DATABASE_OPTIONS[database]?.name || database}`));
+  if (swagger) {
+    console.log(chalk.gray(`   Swagger: ${chalk.green('Enabled')}`));
+  }
   console.log(chalk.white('\n🎉 Your project is ready!\n'));
 }
 
@@ -296,11 +299,14 @@ async function promptDevServer(targetDir, packageManager) {
  * Prints manual setup instructions when interactive setup is skipped
  */
 function printManualInstructions(appName, options) {
-  const { orm, database, packageManager, installDependencies } = options;
+  const { orm, database, packageManager, installDependencies, swagger } = options;
   
   console.log(chalk.green('\n✅ Success! Created ' + chalk.bold(appName)));
   console.log(chalk.gray(`   ORM: ${ORM_OPTIONS[orm]?.name || orm}`));
   console.log(chalk.gray(`   Database: ${DATABASE_OPTIONS[database]?.name || database}`));
+  if (swagger) {
+    console.log(chalk.gray(`   Swagger: ${chalk.green('Enabled')}`));
+  }
   console.log(chalk.white('\n📚 Next steps:\n'));
   console.log(chalk.cyan(`   cd ${appName}`));
   
@@ -329,6 +335,11 @@ function printManualInstructions(appName, options) {
   
   console.log(chalk.cyan('\n   # Start development server:'));
   console.log(chalk.gray('   npm run start:dev'));
+  
+  if (swagger) {
+    console.log(chalk.cyan('\n   # Swagger API documentation:'));
+    console.log(chalk.gray('   http://localhost:8080/api/docs'));
+  }
   
   console.log(chalk.white('\n📖 Documentation: https://github.com/masabinhok/create-nestjs-auth'));
   console.log(chalk.white('🐛 Issues: https://github.com/masabinhok/create-nestjs-auth/issues\n'));

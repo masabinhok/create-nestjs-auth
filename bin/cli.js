@@ -41,6 +41,7 @@ program
   .option('--skip-git', 'Skip git repository initialization')
   .option('--orm <orm>', 'ORM to use (prisma|typeorm|drizzle|mongoose)')
   .option('--database <db>', 'Database to use (postgres|mysql|sqlite|mongodb)')
+  .option('--swagger', 'Add Swagger API documentation')
   .option('--yes', 'Skip all prompts and use defaults')
   .action(async (appName, options) => {
     try {
@@ -68,7 +69,11 @@ program
 
       console.log(chalk.blue(`\n🚀 Creating ${chalk.bold(appName)}...`));
       console.log(chalk.gray(`   ORM: ${ORM_OPTIONS[projectOptions.orm]?.name || projectOptions.orm}`));
-      console.log(chalk.gray(`   Database: ${DATABASE_OPTIONS[projectOptions.database]?.name || projectOptions.database}\n`));
+      console.log(chalk.gray(`   Database: ${DATABASE_OPTIONS[projectOptions.database]?.name || projectOptions.database}`));
+      if (projectOptions.swagger) {
+        console.log(chalk.gray(`   Swagger: ${chalk.green('Enabled')}`));
+      }
+      console.log('');
 
       // Generate the project
       await generateProject(targetDir, projectOptions);
@@ -154,8 +159,11 @@ program
         printManualInstructions(appName, projectOptions);
       } else {
         console.log(chalk.white('\n📖 Documentation: https://github.com/masabinhok/create-nestjs-auth'));
-        console.log(chalk.white('🐛 Issues: https://github.com/masabinhok/create-nestjs-auth/issues\n'));
-        console.log(chalk.magenta('Happy coding! 🎉\n'));
+        console.log(chalk.white('🐛 Issues: https://github.com/masabinhok/create-nestjs-auth/issues'));
+        if (projectOptions.swagger) {
+          console.log(chalk.cyan('📄 Swagger docs: http://localhost:8080/api/docs'));
+        }
+        console.log(chalk.magenta('\nHappy coding! 🎉\n'));
       }
 
     } catch (error) {
