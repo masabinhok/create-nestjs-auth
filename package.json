@@ -1,5 +1,5 @@
 {
-  "name": "@astralicc/create-nestjs-auth-swagger",
+  "name": "create-nestjs-auth",
   "version": "2.1.0",
   "description": "CLI tool to scaffold a production-ready NestJS authentication system with JWT, refresh tokens, and RBAC",
   "keywords": [
