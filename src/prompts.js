@@ -90,6 +90,16 @@ async function promptForProjectDetails(providedAppName, options) {
     });
   }
 
+  // Swagger documentation prompt
+  if (!options.swagger && !options.yes) {
+    questions.push({
+      type: 'confirm',
+      name: 'swagger',
+      message: 'Add Swagger (OpenAPI) documentation?',
+      default: false,
+    });
+  }
+
   const answers = await inquirer.prompt(questions);
 
   // Determine ORM and database
@@ -105,6 +115,7 @@ async function promptForProjectDetails(providedAppName, options) {
     packageManager: options.packageManager || answers.packageManager || detectPackageManager(),
     installDependencies: options.skipInstall ? false : answers.installDependencies !== false,
     initializeGit: options.skipGit ? false : answers.initializeGit !== false,
+    swagger: options.swagger || answers.swagger || false,
   };
 }
 

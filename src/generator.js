@@ -14,17 +14,19 @@ const { ORM_OPTIONS } = require('./constants');
  * @param {object} options - Generation options
  */
 async function generateProject(targetDir, options) {
-  const { orm, database } = options;
+  const { orm, database, swagger } = options;
   const templatesDir = path.join(__dirname, '..', 'templates');
-  
+
   const baseDir = path.join(templatesDir, 'base');
   const ormDir = path.join(templatesDir, 'orm', orm);
   const dbDir = path.join(templatesDir, 'database', database);
-  
+  const swaggerDir = path.join(templatesDir, 'swagger');
+  const swaggerMongooseDir = path.join(templatesDir, 'swagger-mongoose');
+
   const useNewStructure = await fs.pathExists(baseDir);
-  
+
   if (useNewStructure) {
-    await generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir, orm });
+    await generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir, orm, swagger, swaggerDir, swaggerMongooseDir });
   } else {
     await generateFromLegacyTemplate(targetDir);
   }
@@ -35,12 +37,12 @@ async function generateProject(targetDir, options) {
  * @param {string} targetDir - Target directory
  * @param {object} dirs - Directory paths
  */
-async function generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir, orm }) {
+async function generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir, orm, swagger, swaggerDir, swaggerMongooseDir }) {
   console.log(chalk.gray('   Using modular template structure...'));
-  
+
   // Ensure target directory exists
   await fs.ensureDir(targetDir);
-  
+
   // Step 1: Copy base template
   console.log(chalk.gray('   Copying base template...'));
   await fs.copy(baseDir, targetDir, {
@@ -61,7 +63,7 @@ async function generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir,
       overwrite: true,
       filter: createCopyFilter(ormDir, ['package.json']),
     });
-    
+
     await mergePackageJson(ormDir, targetDir);
   }
 
@@ -72,8 +74,30 @@ async function generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir,
       overwrite: true,
       filter: createOrmSpecificFilter(orm, dbDir),
     });
-    
+
     await mergePackageJson(dbDir, targetDir, true);
+  }
+
+  // Step 5: Apply Swagger documentation overlay
+  if (swagger) {
+    console.log(chalk.gray('   Adding Swagger documentation...'));
+    if (await fs.pathExists(swaggerDir)) {
+      await fs.copy(swaggerDir, targetDir, {
+        overwrite: true,
+        filter: createCopyFilter(swaggerDir),
+      });
+    }
+
+    // Apply ORM-specific Swagger overrides (e.g., Mongoose DTOs)
+    if (orm === 'mongoose' && await fs.pathExists(swaggerMongooseDir)) {
+      await fs.copy(swaggerMongooseDir, targetDir, {
+        overwrite: true,
+        filter: createCopyFilter(swaggerMongooseDir),
+      });
+    }
+
+    // Add Swagger dependencies to package.json
+    await addSwaggerDependencies(targetDir);
   }
 }
 
@@ -84,7 +108,7 @@ async function generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir,
 async function generateFromLegacyTemplate(targetDir) {
   console.log(chalk.gray('   Using legacy template structure...'));
   const templateDir = path.join(__dirname, '..', 'template');
-  
+
   if (!(await fs.pathExists(templateDir))) {
     console.error(chalk.red('❌ Template directory not found'));
     console.error(chalk.yellow('   Please reinstall create-nestjs-auth: npm install -g create-nestjs-auth'));
@@ -96,10 +120,10 @@ async function generateFromLegacyTemplate(targetDir) {
       const relativePath = path.relative(templateDir, src);
       const basename = path.basename(src);
       if (basename === '.gitignore') return true;
-      return !relativePath.startsWith('.git' + path.sep) && 
-             relativePath !== '.git' &&
-             !relativePath.includes('node_modules') &&
-             !relativePath.includes('dist');
+      return !relativePath.startsWith('.git' + path.sep) &&
+        relativePath !== '.git' &&
+        !relativePath.includes('node_modules') &&
+        !relativePath.includes('dist');
     },
   });
 }
@@ -114,15 +138,15 @@ function createCopyFilter(baseDir, excludeFiles = []) {
   return (src) => {
     const basename = path.basename(src);
     const relativePath = path.relative(baseDir, src);
-    
+
     // Allow gitignore (renamed from .gitignore for npm compatibility)
     if (basename === 'gitignore' || basename === '.gitignore') return true;
     if (excludeFiles.includes(basename)) return false;
-    
+
     // Check for node_modules and .git only within the template directory
-    return !relativePath.includes('node_modules') && 
-           !relativePath.includes(path.sep + '.git') &&
-           basename !== '.git';
+    return !relativePath.includes('node_modules') &&
+      !relativePath.includes(path.sep + '.git') &&
+      basename !== '.git';
   };
 }
 
@@ -200,6 +224,23 @@ async function mergePackageJson(sourceDir, targetDir, dependenciesOnly = false) 
   }
 
   await fs.writeJSON(targetPackageJsonPath, targetPackageJson, { spaces: 2 });
+}
+
+/**
+ * Adds Swagger dependencies to the project's package.json
+ * @param {string} targetDir - Target directory
+ */
+async function addSwaggerDependencies(targetDir) {
+  const packageJsonPath = path.join(targetDir, 'package.json');
+  if (!(await fs.pathExists(packageJsonPath))) return;
+
+  const packageJson = await fs.readJSON(packageJsonPath);
+  packageJson.dependencies = {
+    ...packageJson.dependencies,
+    '@nestjs/swagger': '^11.0.0',
+    'swagger-ui-express': '^5.0.1',
+  };
+  await fs.writeJSON(packageJsonPath, packageJson, { spaces: 2 });
 }
 
 module.exports = {
