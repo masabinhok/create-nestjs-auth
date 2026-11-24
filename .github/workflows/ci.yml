@@ -13,7 +13,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [20.x, 22.x, 24.x]
 
     steps:
       - name: Checkout repository
@@ -37,10 +37,33 @@ jobs:
           test -d test-output/src
           test -f test-output/package.json
           test -f test-output/tsconfig.json
+          test -f test-output/.env
+          test -f test-output/docker-compose.yml
+          test ! -f test-output/CHANGELOG.md
+          if grep -q 'change-me' test-output/.env; then echo 'placeholder secret left in .env'; exit 1; fi
           echo "✅ Project structure verified"
 
       - name: Cleanup test output
         run: rm -rf test-output
+
+  starter-builds:
+    name: Generated starter installs, builds and tests
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+      - run: npm ci
+      - run: corepack enable
+      - run: node index.js starter-app --skip-git --yes
+      - name: Build and unit-test the generated app
+        working-directory: starter-app
+        run: |
+          pnpm build
+          pnpm test
 
   test-orms:
     name: Test ORM - ${{ matrix.orm }}
@@ -75,7 +98,7 @@ jobs:
 
       - name: Generate ${{ matrix.orm }} project
         run: |
-          node index.js test-${{ matrix.orm }}-app \
+          node index.js test-${{ matrix.orm }}-app --legacy \
             --orm ${{ matrix.orm }} \
             --database ${{ matrix.database }} \
             --skip-install \
@@ -120,7 +143,7 @@ jobs:
 
       - name: Test with ${{ matrix.pm }}
         run: |
-          node index.js test-pm-app \
+          node index.js test-pm-app --legacy \
             --package-manager ${{ matrix.pm }} \
             --skip-install \
             --skip-git \

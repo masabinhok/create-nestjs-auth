@@ -1,33 +1,84 @@
-﻿<div align="center">
+<div align="center">
 
 # create-nestjs-auth
 
-### The Zero-Config Way to Build Secure Authentication
+### Production-ready NestJS auth in one command
 
-**Stop wasting 40 hours building JWT auth from scratch.**  
-Get a battle-tested, production-ready NestJS auth system in **under 3 minutes**.
+Scaffolds [**nestjs-auth-starter**](https://github.com/masabinhok/nestjs-auth-starter): NestJS 12 on the official
+`@nestjs/authentication` and `@nestjs/authorization` packages, with Prisma, PostgreSQL and Docker.
 
 [![npm version](https://img.shields.io/npm/v/create-nestjs-auth.svg?style=flat-square&color=E0234E)](https://www.npmjs.com/package/create-nestjs-auth)
 [![Downloads](https://img.shields.io/npm/dm/create-nestjs-auth.svg?style=flat-square&color=48BB78)](https://www.npmjs.com/package/create-nestjs-auth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
-[![Node Version](https://img.shields.io/node/v/create-nestjs-auth?style=flat-square&color=339933)](https://nodejs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![NestJS](https://img.shields.io/badge/NestJS-11.0-E0234E?style=flat-square&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![NestJS](https://img.shields.io/badge/NestJS-12-E0234E?style=flat-square&logo=nestjs&logoColor=white)](https://nestjs.com/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
 ```bash
 npx create-nestjs-auth@latest
 ```
 
-[Quick Start](#quick-start) | [ORM & Database Options](#orm--database-options) | [Features](#what-you-get) | [Docs](#links--resources)
-
----
-
-**v2.0.8** | **4 ORMs** (Prisma, Drizzle, TypeORM, Mongoose) | **4 Databases** (PostgreSQL, MySQL, SQLite, MongoDB)
-
 </div>
 
 ---
+
+## Quick start
+
+```bash
+npx create-nestjs-auth@latest my-app
+cd my-app
+docker compose up -d                  # API, Postgres, Redis, mail inbox
+docker compose run --rm seed          # demo admin and user
+```
+
+Open http://localhost:8080/docs for the API reference and http://localhost:8025
+for the emails the app sends.
+
+The CLI downloads a tagged release of the starter, removes the starter's own
+project files, writes a `.env` with freshly generated secrets and the features
+you picked, and optionally installs dependencies (pnpm) and runs `git init`.
+
+## What you get
+
+- Browser sessions (`__Host-` cookie) and Bearer tokens with rotating refresh tokens
+- Email verification, password reset and change
+- TOTP two-factor authentication with recovery codes
+- Passkeys, magic links, Google and GitHub sign-in, personal API keys
+- Device list and sign-out everywhere, account lockout, audit trail
+- Authorization policies, RFC 9457 errors, OpenAPI docs at `/docs`
+- Docker, docker compose with Postgres, Redis and Mailpit, CI, 100+ tests
+
+See the [starter's README](https://github.com/masabinhok/nestjs-auth-starter#readme) and
+[docs](https://github.com/masabinhok/nestjs-auth-starter/tree/main/docs).
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| `[app-name]` | Directory to create (prompted if omitted) |
+| `--yes` | Accept defaults: every feature on, install, git init |
+| `--skip-install` | Don't install dependencies |
+| `--skip-git` | Don't initialize a git repository |
+| `--ref <tag>` | Starter release to use (default: the one this CLI version targets) |
+| `--legacy` | Use the previous generator (below) |
+
+Requires Node 20+ to run the CLI; the generated project needs Node 24.9+
+(or just Docker).
+
+---
+
+## Legacy generator (`--legacy`)
+
+The v2 generator is still available for projects that need **Drizzle,
+TypeORM or Mongoose**, or **MySQL, SQLite or MongoDB**. It generates
+NestJS 11 code with the v1-era JWT auth design and is no longer developed.
+It is used when you pass `--legacy`, or `--orm`/`--database` with anything
+other than Prisma/PostgreSQL:
+
+```bash
+npx create-nestjs-auth@latest my-app --orm drizzle --database mysql
+```
+
+The rest of this README documents the legacy generator.
 
 ## Why This Exists
 

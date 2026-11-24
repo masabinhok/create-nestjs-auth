@@ -5,6 +5,27 @@ All notable changes to create-nestjs-auth will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-11-24
+
+### Changed
+- **Breaking:** by default the CLI now scaffolds
+  [nestjs-auth-starter v2.0.0](https://github.com/masabinhok/nestjs-auth-starter/releases/tag/v2.0.0):
+  NestJS 12 on the official `@nestjs/authentication` and `@nestjs/authorization`
+  packages, with Prisma, PostgreSQL and Docker. It downloads the tagged release,
+  writes `.env` with generated secrets and the features you pick (2FA, passkeys,
+  magic links, API keys), and installs with pnpm.
+- The version shown by the CLI now comes from package.json.
+
+### Added
+- `--ref <tag>` to scaffold another starter release.
+- `--legacy` to use the previous generator. It is also used automatically for
+  `--orm`/`--database` choices other than Prisma/PostgreSQL, and for `--swagger`.
+
+## [2.1.0]
+
+### Added
+- Optional Swagger (OpenAPI) documentation (`--swagger`).
+
 ## [2.0.8] - 2025-12-05
 
 ### Fixed
