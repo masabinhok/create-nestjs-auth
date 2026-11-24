@@ -28,28 +28,52 @@ const {
   handlePostSetup,
   printManualInstructions,
 } = require(path.join(packageRoot, 'src'));
+const { createFromStarter, STARTER_REPO, STARTER_REF } = require(path.join(packageRoot, 'src', 'starter'));
+
+/**
+ * The legacy generator (v2.x of this CLI) still serves ORMs and databases
+ * the starter doesn't: Drizzle, TypeORM, Mongoose, MySQL, SQLite, MongoDB.
+ */
+function wantsLegacy(options) {
+  return Boolean(
+    options.legacy ||
+      options.swagger ||
+      (options.orm && options.orm !== 'prisma') ||
+      (options.database && options.database !== 'postgres'),
+  );
+}
 
 // ==================== MAIN CLI ====================
 
 program
   .name('create-nestjs-auth')
   .version(CLI_VERSION)
-  .description('Create a production-ready NestJS authentication system with your choice of ORM and database')
+  .description(`Create a NestJS 12 app with production-ready auth, from ${STARTER_REPO}`)
   .argument('[app-name]', 'Name of your application (optional - will prompt if not provided)')
+  .option('--ref <tag>', `Starter release to use (default ${STARTER_REF})`)
+  .option('--legacy', 'Use the v2 generator (choice of ORM and database, v1-era auth code)')
   .option('--skip-install', 'Skip automatic dependency installation')
-  .option('--package-manager <pm>', 'Package manager to use (npm|pnpm|yarn|bun)')
+  .option('--package-manager <pm>', '[legacy] Package manager to use (npm|pnpm|yarn|bun)')
   .option('--skip-git', 'Skip git repository initialization')
-  .option('--orm <orm>', 'ORM to use (prisma|typeorm|drizzle|mongoose)')
-  .option('--database <db>', 'Database to use (postgres|mysql|sqlite|mongodb)')
-  .option('--swagger', 'Add Swagger API documentation')
+  .option('--orm <orm>', '[legacy] ORM to use (prisma|typeorm|drizzle|mongoose)')
+  .option('--database <db>', '[legacy] Database to use (postgres|mysql|sqlite|mongodb)')
+  .option('--swagger', '[legacy] Add Swagger API documentation (the starter always has it)')
   .option('--yes', 'Skip all prompts and use defaults')
   .action(async (appName, options) => {
     try {
       console.log(chalk.cyan(`\n⚡️ create-nestjs-auth v${CLI_VERSION}\n`));
-      console.log(chalk.gray('Production-ready NestJS authentication - Now with ORM & Database choices!\n'));
 
       // Check Node.js version
       checkNodeVersion();
+
+      if (!wantsLegacy(options)) {
+        console.log(chalk.gray('NestJS 12 · @nestjs/authentication · Prisma · PostgreSQL · Docker\n'));
+        await createFromStarter(appName, options, { validateAppName });
+        return;
+      }
+
+      console.log(chalk.gray('Legacy generator: v1-era auth code with your choice of ORM and database.'));
+      console.log(chalk.gray(`For NestJS 12 and the official auth packages, run without --legacy/--orm/--database.\n`));
 
       // Interactive mode - prompt for missing information
       const projectOptions = await promptForProjectDetails(appName, options);
